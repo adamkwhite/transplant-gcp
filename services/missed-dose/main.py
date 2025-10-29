@@ -16,6 +16,9 @@ from google.cloud import firestore
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from gemini_client import get_gemini_client
 
+# Constants
+PLATFORM_NAME = "Google Cloud Run"
+
 # Initialize Flask app
 app = Flask(__name__)
 CORS(app)
@@ -135,7 +138,7 @@ def health_check():
         {
             "status": "healthy",
             "service": "missed-dose-analysis",
-            "platform": "Google Cloud Run",
+            "platform": PLATFORM_NAME,
             "ai_model": "Gemini 2.0 Flash" if os.environ.get("GEMINI_API_KEY") else "Mock Mode",
         }
     )
@@ -218,7 +221,7 @@ def missed_dose():
             },
             "medication_details": medication,
             "infrastructure": {
-                "platform": "Google Cloud Run",
+                "platform": PLATFORM_NAME,
                 "database": "Firestore",
                 "ai_model": gemini_response.get("ai_model", "gemini-2.0-flash"),
                 "region": os.environ.get("REGION", "us-central1"),
@@ -239,7 +242,7 @@ def index():
         {
             "service": "Transplant Medication Adherence - Missed Dose Analysis",
             "version": "1.0",
-            "platform": "Google Cloud Run",
+            "platform": PLATFORM_NAME,
             "endpoints": ["/health", "/medications/missed-dose"],
         }
     )

@@ -10,6 +10,10 @@ from typing import Any
 import google.generativeai as genai
 from google.generativeai import GenerativeModel
 
+# Model constants
+GEMINI_FLASH_MODEL = "gemini-2.0-flash"
+GEMINI_FLASH_LITE_MODEL = "gemini-2.0-flash-lite"
+
 
 class GeminiClient:
     """Client for Google Gemini AI API"""
@@ -21,9 +25,9 @@ class GeminiClient:
         if self.api_key:
             genai.configure(api_key=self.api_key)
             # Use Gemini 2.0 Flash - fast and powerful model for medical reasoning
-            self.model = genai.GenerativeModel("gemini-2.0-flash")
+            self.model = genai.GenerativeModel(GEMINI_FLASH_MODEL)
             self.flash_model = genai.GenerativeModel(
-                "gemini-2.0-flash-lite"
+                GEMINI_FLASH_LITE_MODEL
             )  # Even faster for simple queries
         else:
             self.model = None
@@ -83,7 +87,7 @@ Format as valid JSON only."""
                     response_text = response_text[4:]
 
             result: dict[str, Any] = json.loads(response_text)
-            result["ai_model"] = "gemini-2.0-flash"
+            result["ai_model"] = GEMINI_FLASH_MODEL
             return result
 
         except Exception as e:
@@ -135,7 +139,7 @@ Format as valid JSON only."""
                     response_text = response_text[4:]
 
             result: dict[str, Any] = json.loads(response_text)
-            result["ai_model"] = "gemini-2.0-flash"
+            result["ai_model"] = GEMINI_FLASH_MODEL
             return result
 
         except Exception as e:
@@ -184,7 +188,7 @@ Format as valid JSON only."""
                     response_text = response_text[4:]
 
             result: dict[str, Any] = json.loads(response_text)
-            result["ai_model"] = "gemini-2.0-flash"
+            result["ai_model"] = GEMINI_FLASH_MODEL
             return result
 
         except Exception as e:
