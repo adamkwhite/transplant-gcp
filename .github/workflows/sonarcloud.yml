@@ -57,8 +57,8 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
           args: >
-            -Dsonar.organization=adam
-            -Dsonar.projectKey=adam_transplant-gcp
+            -Dsonar.organization=adamkwhite
+            -Dsonar.projectKey=adamkwhite_transplant-gcp
 
       - name: SonarCloud Quality Gate Check
         uses: SonarSource/sonarqube-quality-gate-action@master
