@@ -3,11 +3,11 @@
 Guidelines for managing task lists in markdown files to track progress on completing a PRD
 
 ## Task Implementation
-- Start a new gh branch 
+- Start a new gh branch
 - **One sub-task at a time:** Do **NOT** start the next sub‑task until you ask the user for permission and they say “yes” or "y"
-- **Completion protocol:**  
-  1. When you finish a **sub‑task**, immediately mark it as completed by changing `[ ]` to `[x]`.  
-  2. If **all** subtasks underneath a parent task are now `[x]`, also mark the **parent task** as completed.  
+- **Completion protocol:**
+  1. When you finish a **sub‑task**, immediately mark it as completed by changing `[ ]` to `[x]`.
+  2. If **all** subtasks underneath a parent task are now `[x]`, also mark the **parent task** as completed.
 - Stop after each sub‑task and wait for the user’s go‑ahead.
 
 ## Task List Maintenance
@@ -31,6 +31,6 @@ When working with task lists, the AI must:
 3. Add newly discovered tasks.
 4. Keep “Relevant Files” accurate and up to date.
 5. Before starting work, check which sub‑task is next.
-6. After implementing a sub‑task, update the file, 
+6. After implementing a sub‑task, update the file,
 7. Pause for user approval to commit to gh. (Reply "yes" or "y" to continue)
-8. Commit code code to git. 
+8. Commit code code to git.

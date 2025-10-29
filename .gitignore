@@ -234,4 +234,3 @@ service-account*.json
 
 # Google Cloud SDK
 .gcloud/
-

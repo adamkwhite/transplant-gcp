@@ -66,7 +66,7 @@ The generated task list _must_ follow this structure:
 ```
 
 ## Interaction Model
-The process explicitly requires a pause after generating parent tasks to get user confirmation ("Go") before proceeding to generate the detailed sub-tasks. 
+The process explicitly requires a pause after generating parent tasks to get user confirmation ("Go") before proceeding to generate the detailed sub-tasks.
 This ensures the high-level plan aligns with user expectations before diving into details.
 Offer to process the task list using process-task-list.mdc
 (Reply "yes" or "y" to continue)

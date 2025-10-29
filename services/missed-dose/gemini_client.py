@@ -3,26 +3,32 @@ Google Gemini AI Client for Transplant Medication Adherence
 Real AI inference for the Google Cloud Run Hackathon
 """
 
-import os
-import google.generativeai as genai
-from typing import Dict, Any, List, Optional
 import json
+import os
+from typing import Any
+
+import google.generativeai as genai
+
 
 class GeminiClient:
     """Client for Google Gemini AI API"""
 
-    def __init__(self, api_key: Optional[str] = None):
-        self.api_key = api_key or os.environ.get('GEMINI_API_KEY', '')
+    def __init__(self, api_key: str | None = None):
+        self.api_key = api_key or os.environ.get("GEMINI_API_KEY", "")
         if self.api_key:
             genai.configure(api_key=self.api_key)
             # Use Gemini 2.0 Flash - fast and powerful model for medical reasoning
-            self.model = genai.GenerativeModel('gemini-2.0-flash')
-            self.flash_model = genai.GenerativeModel('gemini-2.0-flash-lite')  # Even faster for simple queries
+            self.model = genai.GenerativeModel("gemini-2.0-flash")
+            self.flash_model = genai.GenerativeModel(
+                "gemini-2.0-flash-lite"
+            )  # Even faster for simple queries
         else:
             self.model = None
             self.flash_model = None
 
-    def analyze_missed_dose(self, medication: str, hours_late: float, patient_context: Dict) -> Dict[str, Any]:
+    def analyze_missed_dose(
+        self, medication: str, hours_late: float, patient_context: dict
+    ) -> dict[str, Any]:
         """
         Analyze missed medication dose using Gemini AI
         Returns structured medical guidance
@@ -62,26 +68,26 @@ Format as valid JSON only."""
                 generation_config=genai.types.GenerationConfig(
                     temperature=0.3,  # Lower for medical accuracy
                     max_output_tokens=800,
-                )
+                ),
             )
 
             # Parse JSON from response
             response_text = response.text.strip()
             # Remove markdown code blocks if present
-            if response_text.startswith('```'):
-                response_text = response_text.split('```')[1]
-                if response_text.startswith('json'):
+            if response_text.startswith("```"):
+                response_text = response_text.split("```")[1]
+                if response_text.startswith("json"):
                     response_text = response_text[4:]
 
             result = json.loads(response_text)
-            result['ai_model'] = 'gemini-2.0-flash'
+            result["ai_model"] = "gemini-2.0-flash"
             return result
 
         except Exception as e:
             print(f"Gemini API Error: {e}")
             return self._mock_response(medication, hours_late)
 
-    def analyze_symptoms(self, symptoms: List[str], patient_context: Dict) -> Dict[str, Any]:
+    def analyze_symptoms(self, symptoms: list[str], patient_context: dict) -> dict[str, Any]:
         """
         Analyze symptoms for rejection risk using Gemini
         """
@@ -116,24 +122,24 @@ Format as valid JSON only."""
                 generation_config=genai.types.GenerationConfig(
                     temperature=0.3,
                     max_output_tokens=600,
-                )
+                ),
             )
 
             response_text = response.text.strip()
-            if response_text.startswith('```'):
-                response_text = response_text.split('```')[1]
-                if response_text.startswith('json'):
+            if response_text.startswith("```"):
+                response_text = response_text.split("```")[1]
+                if response_text.startswith("json"):
                     response_text = response_text[4:]
 
             result = json.loads(response_text)
-            result['ai_model'] = 'gemini-2.0-flash'
+            result["ai_model"] = "gemini-2.0-flash"
             return result
 
         except Exception as e:
             print(f"Gemini API Error: {e}")
             return self._mock_symptom_analysis(symptoms)
 
-    def check_drug_interactions(self, medications: List[str], new_item: str) -> Dict[str, Any]:
+    def check_drug_interactions(self, medications: list[str], new_item: str) -> dict[str, Any]:
         """
         Check for drug interactions using Gemini's medical knowledge
         """
@@ -165,24 +171,24 @@ Format as valid JSON only."""
                 generation_config=genai.types.GenerationConfig(
                     temperature=0.2,  # Very low for drug safety
                     max_output_tokens=500,
-                )
+                ),
             )
 
             response_text = response.text.strip()
-            if response_text.startswith('```'):
-                response_text = response_text.split('```')[1]
-                if response_text.startswith('json'):
+            if response_text.startswith("```"):
+                response_text = response_text.split("```")[1]
+                if response_text.startswith("json"):
                     response_text = response_text[4:]
 
             result = json.loads(response_text)
-            result['ai_model'] = 'gemini-2.0-flash'
+            result["ai_model"] = "gemini-2.0-flash"
             return result
 
         except Exception as e:
             print(f"Gemini API Error: {e}")
             return self._mock_interaction_check(medications, new_item)
 
-    def _mock_response(self, medication: str, hours_late: float) -> Dict[str, Any]:
+    def _mock_response(self, medication: str, hours_late: float) -> dict[str, Any]:
         """Fallback mock response when API unavailable"""
         if hours_late <= 6:
             return {
@@ -192,16 +198,16 @@ Format as valid JSON only."""
                     f"Patient is {hours_late:.1f} hours late - within safe window",
                     "Taking now maintains therapeutic blood levels",
                     "Risk of rejection outweighs timing irregularity",
-                    "Set alarm for next dose to maintain schedule"
+                    "Set alarm for next dose to maintain schedule",
                 ],
                 "risk_level": "medium" if hours_late > 4 else "low",
                 "confidence": 0.85,
                 "next_steps": [
                     "Take the medication immediately",
                     "Set alarm for next scheduled dose",
-                    "Log this incident in medication diary"
+                    "Log this incident in medication diary",
                 ],
-                "ai_model": "mock_response"
+                "ai_model": "mock_response",
             }
         else:
             return {
@@ -211,21 +217,23 @@ Format as valid JSON only."""
                     "Taking now would be too close to next dose",
                     "Could cause medication level spike",
                     "Better to maintain regular schedule",
-                    "Contact transplant team if concerned"
+                    "Contact transplant team if concerned",
                 ],
                 "risk_level": "high",
                 "confidence": 0.80,
                 "next_steps": [
                     "Skip this dose",
                     "Take next dose at regular time",
-                    "Contact transplant coordinator"
+                    "Contact transplant coordinator",
                 ],
-                "ai_model": "mock_response"
+                "ai_model": "mock_response",
             }
 
-    def _mock_symptom_analysis(self, symptoms: List[str]) -> Dict[str, Any]:
+    def _mock_symptom_analysis(self, symptoms: list[str]) -> dict[str, Any]:
         """Mock symptom analysis response"""
-        high_risk = any(s in str(symptoms).lower() for s in ['fever', 'decreased urine', 'weight gain'])
+        high_risk = any(
+            s in str(symptoms).lower() for s in ["fever", "decreased urine", "weight gain"]
+        )
 
         return {
             "rejection_risk": "high" if high_risk else "low",
@@ -233,27 +241,27 @@ Format as valid JSON only."""
             "reasoning": [
                 "Symptoms analyzed for rejection indicators",
                 "Checked against known rejection patterns",
-                "Risk stratified based on symptom severity"
+                "Risk stratified based on symptom severity",
             ],
             "actions": [
                 "Contact transplant team immediately" if high_risk else "Monitor symptoms",
                 "Check temperature and weight",
-                "Document symptoms for next appointment"
+                "Document symptoms for next appointment",
             ],
             "differential": ["Infection", "Medication side effects", "Dehydration"],
-            "ai_model": "mock_response"
+            "ai_model": "mock_response",
         }
 
-    def _mock_interaction_check(self, medications: List[str], new_item: str) -> Dict[str, Any]:
+    def _mock_interaction_check(self, medications: list[str], new_item: str) -> dict[str, Any]:
         """Mock drug interaction check"""
-        if 'tacrolimus' in [m.lower() for m in medications] and 'grapefruit' in new_item.lower():
+        if "tacrolimus" in [m.lower() for m in medications] and "grapefruit" in new_item.lower():
             return {
                 "has_interaction": True,
                 "severity": "severe",
                 "mechanism": "Grapefruit inhibits CYP3A4 enzyme",
                 "clinical_effect": "Tacrolimus levels increase 2-3x, risk of toxicity",
                 "recommendation": "Avoid grapefruit and grapefruit juice completely",
-                "ai_model": "mock_response"
+                "ai_model": "mock_response",
             }
 
         return {
@@ -262,13 +270,14 @@ Format as valid JSON only."""
             "mechanism": "No known interaction",
             "clinical_effect": "Safe to use together",
             "recommendation": "No special precautions needed",
-            "ai_model": "mock_response"
+            "ai_model": "mock_response",
         }
+
 
 # Factory function
 def get_gemini_client():
     """Get Gemini client with proper configuration"""
-    api_key = os.environ.get('GEMINI_API_KEY')
+    api_key = os.environ.get("GEMINI_API_KEY")
     if not api_key:
         print("Warning: GEMINI_API_KEY not set, using mock responses")
     return GeminiClient(api_key=api_key)

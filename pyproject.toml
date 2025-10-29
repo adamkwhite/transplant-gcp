@@ -45,6 +45,15 @@ Issues = "https://github.com/adam/transplant-gcp/issues"
 line-length = 100
 target-version = "py312"
 
+exclude = [
+    ".git",
+    ".venv",
+    "__pycache__",
+    "build",
+    "dist",
+]
+
+[tool.ruff.lint]
 # Enable pycodestyle (E), Pyflakes (F), isort (I), and other rules
 select = [
     "E",   # pycodestyle errors
@@ -65,18 +74,10 @@ ignore = [
     "B905",  # zip without explicit strict parameter
 ]
 
-exclude = [
-    ".git",
-    ".venv",
-    "__pycache__",
-    "build",
-    "dist",
-]
-
-[tool.ruff.per-file-ignores]
+[tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["F401"]  # Allow unused imports in __init__.py
 
-[tool.ruff.isort]
+[tool.ruff.lint.isort]
 known-first-party = ["services"]
 
 # === MYPY CONFIGURATION ===
@@ -92,6 +93,7 @@ exclude = [
     ".venv/",
     "build/",
     "dist/",
+    "services/missed-dose/",  # Legacy service directory with duplicate modules
 ]
 
 # Per-module options

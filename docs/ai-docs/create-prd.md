@@ -7,7 +7,7 @@ To guide an AI assistant in creating a detailed Product Requirements Document (P
 ## Process
 
 1. **Receive Initial Prompt:** The user provides a brief description or request for a new feature or functionality. It could be a few lines, or a github issue.
-2. ** Get a perspective on the project by reading details from Readme.md, Claude.md, docs/, the last 5 PRs in github, and any logged github issues 
+2. ** Get a perspective on the project by reading details from Readme.md, Claude.md, docs/, the last 5 PRs in github, and any logged github issues
 3. ** Ask Clarifying Questions:** Before writing the PRD, the AI *must* ask clarifying questions to gather sufficient detail. The goal is to understand the "what" and "why" of the feature, not necessarily the "how" (which the developer will figure out).
 4. ** Generate PRD:** Based on the initial prompt and the user's answers to the clarifying questions, generate a PRD using the structure outlined below.
 5. ** Save PRD:** Create a new feature directory `docs/features/[feature-name]-PLANNED/` and save the generated document as `prd.md` inside that directory.
