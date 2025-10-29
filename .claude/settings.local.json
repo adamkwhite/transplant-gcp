@@ -5,7 +5,8 @@
       "WebSearch",
       "Read(//home/adam/Code/project_template/**)",
       "Bash(source:*)",
-      "Bash(pre-commit run:*)"
+      "Bash(pre-commit run:*)",
+      "Bash(git commit:*)"
     ],
     "deny": [],
     "ask": []

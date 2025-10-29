@@ -45,7 +45,11 @@ security:
 	@echo "Running Bandit security scan..."
 	bandit -r services/ -c pyproject.toml
 	@echo "\nRunning Safety dependency check..."
-	safety check --file requirements.txt
+	@if [ -f services/missed-dose/requirements.txt ]; then \
+		safety check --file services/missed-dose/requirements.txt; \
+	else \
+		echo "No requirements.txt found to scan"; \
+	fi
 
 # Run pre-commit hooks on all files
 pre-commit:

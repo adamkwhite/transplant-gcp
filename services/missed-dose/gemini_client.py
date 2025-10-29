@@ -41,10 +41,10 @@ class GeminiClient:
 Patient Context:
 - Medication: {medication}
 - Hours late: {hours_late} hours
-- Transplant type: {patient_context.get('transplant_type', 'kidney')}
-- Months post-transplant: {patient_context.get('months_post_transplant', 6)}
-- Current adherence rate: {patient_context.get('adherence_rate', 0.85) * 100:.0f}%
-- Doses missed this week: {patient_context.get('missed_this_week', 0)}
+- Transplant type: {patient_context.get("transplant_type", "kidney")}
+- Months post-transplant: {patient_context.get("months_post_transplant", 6)}
+- Current adherence rate: {patient_context.get("adherence_rate", 0.85) * 100:.0f}%
+- Doses missed this week: {patient_context.get("missed_this_week", 0)}
 
 Medical Knowledge:
 - Tacrolimus has a 12-hour therapeutic window
@@ -96,9 +96,9 @@ Format as valid JSON only."""
 
         prompt = f"""You are a medical AI analyzing transplant rejection symptoms.
 
-Patient reports: {', '.join(symptoms)}
-Transplant type: {patient_context.get('transplant_type', 'kidney')}
-Current medications: {', '.join(patient_context.get('medications', ['tacrolimus', 'mycophenolate']))}
+Patient reports: {", ".join(symptoms)}
+Transplant type: {patient_context.get("transplant_type", "kidney")}
+Current medications: {", ".join(patient_context.get("medications", ["tacrolimus", "mycophenolate"]))}
 
 Critical rejection symptoms for kidney transplant:
 - Fever > 100°F
@@ -148,7 +148,7 @@ Format as valid JSON only."""
 
         prompt = f"""You are a clinical pharmacist AI checking drug interactions for transplant patients.
 
-Current medications: {', '.join(medications)}
+Current medications: {", ".join(medications)}
 New item to check: {new_item}
 
 Important interactions for transplant medications:

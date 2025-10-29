@@ -8,6 +8,7 @@ import os
 from typing import Any
 
 import google.generativeai as genai
+from google.generativeai import GenerativeModel
 
 
 class GeminiClient:
@@ -15,6 +16,8 @@ class GeminiClient:
 
     def __init__(self, api_key: str | None = None):
         self.api_key = api_key or os.environ.get("GEMINI_API_KEY", "")
+        self.model: GenerativeModel | None
+        self.flash_model: GenerativeModel | None
         if self.api_key:
             genai.configure(api_key=self.api_key)
             # Use Gemini 2.0 Flash - fast and powerful model for medical reasoning
@@ -41,10 +44,10 @@ class GeminiClient:
 Patient Context:
 - Medication: {medication}
 - Hours late: {hours_late} hours
-- Transplant type: {patient_context.get('transplant_type', 'kidney')}
-- Months post-transplant: {patient_context.get('months_post_transplant', 6)}
-- Current adherence rate: {patient_context.get('adherence_rate', 0.85) * 100:.0f}%
-- Doses missed this week: {patient_context.get('missed_this_week', 0)}
+- Transplant type: {patient_context.get("transplant_type", "kidney")}
+- Months post-transplant: {patient_context.get("months_post_transplant", 6)}
+- Current adherence rate: {patient_context.get("adherence_rate", 0.85) * 100:.0f}%
+- Doses missed this week: {patient_context.get("missed_this_week", 0)}
 
 Medical Knowledge:
 - Tacrolimus has a 12-hour therapeutic window
@@ -91,14 +94,14 @@ Format as valid JSON only."""
         """
         Analyze symptoms for rejection risk using Gemini
         """
-        if not self.model:
+        if not self.flash_model:
             return self._mock_symptom_analysis(symptoms)
 
         prompt = f"""You are a medical AI analyzing transplant rejection symptoms.
 
-Patient reports: {', '.join(symptoms)}
-Transplant type: {patient_context.get('transplant_type', 'kidney')}
-Current medications: {', '.join(patient_context.get('medications', ['tacrolimus', 'mycophenolate']))}
+Patient reports: {", ".join(symptoms)}
+Transplant type: {patient_context.get("transplant_type", "kidney")}
+Current medications: {", ".join(patient_context.get("medications", ["tacrolimus", "mycophenolate"]))}
 
 Critical rejection symptoms for kidney transplant:
 - Fever > 100°F
@@ -143,12 +146,12 @@ Format as valid JSON only."""
         """
         Check for drug interactions using Gemini's medical knowledge
         """
-        if not self.model:
+        if not self.flash_model:
             return self._mock_interaction_check(medications, new_item)
 
         prompt = f"""You are a clinical pharmacist AI checking drug interactions for transplant patients.
 
-Current medications: {', '.join(medications)}
+Current medications: {", ".join(medications)}
 New item to check: {new_item}
 
 Important interactions for transplant medications:
