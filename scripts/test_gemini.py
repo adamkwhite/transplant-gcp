@@ -2,7 +2,9 @@
 """
 Test Gemini API to find working model names
 """
+
 import sys
+
 import google.generativeai as genai
 
 if len(sys.argv) < 2:
@@ -20,8 +22,8 @@ print("\nListing all available models:")
 try:
     for model in genai.list_models():
         print(f"  - {model.name}")
-        if 'generateContent' in model.supported_generation_methods:
-            print(f"    ✓ Supports generateContent")
+        if "generateContent" in model.supported_generation_methods:
+            print("    ✓ Supports generateContent")
 except Exception as e:
     print(f"Error listing models: {e}")
 
@@ -30,16 +32,16 @@ print("\nTesting specific model names:")
 
 # Test various model name formats
 test_models = [
-    'gemini-pro',
-    'gemini-1.0-pro',
-    'gemini-1.5-pro',
-    'gemini-1.5-flash',
-    'models/gemini-pro',
-    'models/gemini-1.0-pro',
-    'models/gemini-1.5-pro',
-    'models/gemini-1.5-flash',
-    'gemini-pro-vision',
-    'models/gemini-pro-vision'
+    "gemini-pro",
+    "gemini-1.0-pro",
+    "gemini-1.5-pro",
+    "gemini-1.5-flash",
+    "models/gemini-pro",
+    "models/gemini-1.0-pro",
+    "models/gemini-1.5-pro",
+    "models/gemini-1.5-flash",
+    "gemini-pro-vision",
+    "models/gemini-pro-vision",
 ]
 
 for model_name in test_models:
@@ -53,7 +55,7 @@ for model_name in test_models:
     except Exception as e:
         error_msg = str(e)
         if "404" in error_msg:
-            print(f"  ❌ Not found")
+            print("  ❌ Not found")
         else:
             print(f"  ❌ Error: {error_msg[:100]}")
 
