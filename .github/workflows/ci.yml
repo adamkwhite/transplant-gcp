@@ -79,7 +79,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ['3.11', '3.12']
+        python-version: ['3.12']
 
     steps:
       - name: Checkout code
@@ -121,7 +121,7 @@ jobs:
           fi
 
       - name: Upload coverage to artifacts
-        if: matrix.python-version == '3.11' && hashFiles('htmlcov/**') != ''
+        if: matrix.python-version == '3.12' && hashFiles('htmlcov/**') != ''
         uses: actions/upload-artifact@v4
         with:
           name: coverage-report
@@ -129,7 +129,7 @@ jobs:
           retention-days: 30
 
       - name: Upload test report to artifacts
-        if: matrix.python-version == '3.11' && hashFiles('test-report.html') != ''
+        if: matrix.python-version == '3.12' && hashFiles('test-report.html') != ''
         uses: actions/upload-artifact@v4
         with:
           name: test-report
@@ -137,7 +137,7 @@ jobs:
           retention-days: 30
 
       - name: Coverage summary
-        if: matrix.python-version == '3.11' && hashFiles('.coverage') != ''
+        if: matrix.python-version == '3.12' && hashFiles('.coverage') != ''
         run: |
           echo "## Test Coverage Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
