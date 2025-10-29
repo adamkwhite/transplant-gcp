@@ -6,7 +6,8 @@
       "Read(//home/adam/Code/project_template/**)",
       "Bash(source:*)",
       "Bash(pre-commit run:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(git add:*)"
     ],
     "deny": [],
     "ask": []

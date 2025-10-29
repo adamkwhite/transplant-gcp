@@ -234,3 +234,14 @@ service-account*.json
 
 # Google Cloud SDK
 .gcloud/
+
+# ==============================================================================
+# SONARCLOUD
+# ==============================================================================
+
+# SonarScanner working directories
+.sonar/
+.scannerwork/
+
+# SonarCloud analysis reports
+sonar-report.json
