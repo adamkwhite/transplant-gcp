@@ -51,7 +51,7 @@ jobs:
           fi
 
       - name: SonarCloud Scan
-        uses: SonarSource/sonarcloud-github-action@master
+        uses: SonarSource/sonarcloud-github-action@ba3875ecf642b2129de2b589510c81a8b53dbf4e # master as of 2025-10-29
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -61,7 +61,7 @@ jobs:
             -Dsonar.projectKey=adamkwhite_transplant-gcp
 
       - name: SonarCloud Quality Gate Check
-        uses: SonarSource/sonarqube-quality-gate-action@master
+        uses: SonarSource/sonarqube-quality-gate-action@95b1cc6c02a15c8ecc00c07b1c2a75ed61a14055 # master as of 2025-10-29
         timeout-minutes: 5
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
