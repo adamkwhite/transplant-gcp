@@ -1,7 +1,20 @@
 # Core Dependencies for Transplant Medication Adherence Multi-Agent System
 
+# INSTALLATION NOTES:
+# Due to opentelemetry-sdk version conflicts, install in this order:
+# 1. pip install --no-deps google-adk==1.17.0
+# 2. pip install "opentelemetry-sdk==1.37.0" "opentelemetry-api==1.37.0"
+# 3. pip install -r requirements.txt
+#
+# See docs/installation/dependency-conflict-workaround.md for details
+
 # Google Agent Development Kit (ADK)
-google-adk>=1.17.0
+# Requires opentelemetry-sdk==1.37.0 (exact version)
+google-adk==1.17.0
+
+# OpenTelemetry (must match ADK requirements)
+opentelemetry-sdk==1.37.0
+opentelemetry-api==1.37.0
 
 # Google Cloud Services
 google-cloud-firestore==2.13.0
