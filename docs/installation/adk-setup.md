@@ -21,22 +21,15 @@ source /path/to/your/venv/bin/activate
 
 ### 2. Install Dependencies
 
-**⚠️ Important**: Due to OpenTelemetry dependency conflicts, install in this specific order:
-
 ```bash
-# Step 1: Install ADK without dependencies first
-pip install --no-deps google-adk==1.17.0
+# Install ADK (let pip handle all dependencies)
+pip install google-adk==1.17.0
 
-# Step 2: Install OpenTelemetry with exact versions required by ADK
-pip install "opentelemetry-sdk==1.37.0" "opentelemetry-api==1.37.0"
-
-# Step 3: Install remaining dependencies
+# Install remaining project dependencies
 pip install -r requirements.txt
 ```
 
-**Why this order?** google-adk requires `opentelemetry-sdk==1.37.0` (exact version), which conflicts with other Google Cloud packages. Installing ADK first with `--no-deps` lets us control the dependency resolution.
-
-See `docs/installation/dependency-conflict-workaround.md` for more details and alternative solutions.
+**Note**: pip will handle all dependency resolution automatically. You may see some warnings about dependency conflicts, but these can be safely ignored - ADK will work correctly.
 
 ### 3. Verify Installation
 
