@@ -223,6 +223,9 @@ docs/_templates/
 .adk_cache/
 agent_logs/
 .adk/
+.adk_state/
+adk_session_*.json
+agent_traces/
 
 # Cloud Run credentials
 gcr-credentials.json

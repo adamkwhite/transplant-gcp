@@ -1,0 +1,15 @@
+# Core Dependencies for Transplant Medication Adherence Multi-Agent System
+
+# Google Agent Development Kit (ADK)
+google-adk>=1.17.0
+
+# Google Cloud Services
+google-cloud-firestore==2.13.0
+google-generativeai==0.3.0
+
+# Web Framework
+Flask==3.0.0
+flask-cors>=4.0.2
+
+# Production Server
+gunicorn>=23.0.0
