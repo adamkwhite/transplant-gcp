@@ -30,6 +30,7 @@ jobs:
           cache-dependency-path: 'requirements.txt'
 
       - name: Install dependencies
+        timeout-minutes: 25
         run: |
           python -m pip install --upgrade pip
           # Install project dependencies if they exist
