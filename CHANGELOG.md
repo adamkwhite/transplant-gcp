@@ -7,14 +7,56 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Planned
-- Task 1.0: Install and configure Google ADK
+### In Progress
 - Task 2.0: Implement Core Agent Classes (4 ADK agents)
 - Task 3.0: Build Multi-Agent Communication Layer
 - Task 4.0: Create Backward-Compatible REST API
 - Task 5.0: Deploy agents to Cloud Run
 - Task 6.0: Testing and Validation
 - Task 7.0: Documentation and Demo Preparation
+
+### Completed
+- Task 1.0: Install and configure Google ADK ✅
+
+## [1.1.0] - 2025-10-30
+
+### Added
+- **Google ADK Installation (Task 1.0)**
+  - Added google-adk>=1.17.0 to requirements.txt
+  - Created ADK configuration module at services/config/adk_config.py
+  - Defined configurations for 4 agents: Coordinator, MedicationAdvisor, SymptomMonitor, DrugInteractionChecker
+  - Created ADK verification script at scripts/verify_adk_installation.py
+  - Created test agent for installation validation at services/agents/test_agent.py
+  - Added ADK installation documentation at docs/installation/adk-setup.md
+
+- **Project Structure**
+  - Created services/agents/ directory for agent implementations
+  - Created services/config/ directory for ADK configuration
+  - Added __init__.py files for proper Python package structure
+  - Updated services/missed-dose/requirements.txt to include ADK
+
+- **Development Environment**
+  - Updated .gitignore with ADK-specific exclusions (.adk_state/, adk_session_*.json, agent_traces/)
+  - Configured model settings (gemini-2.0-flash for all agents)
+  - Set up generation config with temperature=0.3 for medical accuracy
+  - Defined agent-specific instructions and prompts
+
+### Changed
+- Updated repository structure to support multi-agent architecture
+
+### Technical Details
+
+#### ADK Configuration (services/config/adk_config.py:1)
+- Model: gemini-2.0-flash (primary), gemini-2.0-flash-lite (lightweight tasks)
+- Generation config: temperature=0.3, max_output_tokens=800
+- Four agent configurations with medical domain expertise
+- Firestore integration preserved for backward compatibility
+
+#### Agent Specifications
+1. **TransplantCoordinator**: Routes requests using LLM-driven delegation
+2. **MedicationAdvisor**: Analyzes missed doses with 12-hour therapeutic windows
+3. **SymptomMonitor**: Detects rejection symptoms with urgency assessment
+4. **DrugInteractionChecker**: Validates safety using CYP3A4 interaction knowledge
 
 ## [1.0.0] - 2025-10-29
 

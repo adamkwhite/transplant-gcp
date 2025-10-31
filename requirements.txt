@@ -1,0 +1,22 @@
+# Core Dependencies for Transplant Medication Adherence Multi-Agent System
+
+# INSTALLATION:
+# pip install google-adk==1.17.0
+# pip install -r requirements.txt
+#
+# Note: Let pip resolve all ADK dependencies automatically.
+# The --no-deps workaround is NOT needed - pip will handle conflicts.
+
+# Google Agent Development Kit (ADK)
+google-adk==1.17.0
+
+# Google Cloud Services
+google-cloud-firestore==2.13.0
+google-generativeai==0.3.0
+
+# Web Framework
+Flask==3.0.0
+flask-cors>=4.0.2
+
+# Production Server
+gunicorn>=23.0.0
