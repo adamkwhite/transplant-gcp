@@ -76,6 +76,7 @@ ignore = [
 
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["F401"]  # Allow unused imports in __init__.py
+"tests/**/*.py" = ["ARG002", "F841"]  # Allow unused mock arguments and variables in tests
 
 [tool.ruff.lint.isort]
 known-first-party = ["services"]

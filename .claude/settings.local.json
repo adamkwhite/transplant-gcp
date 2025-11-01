@@ -10,7 +10,16 @@
       "Bash(git add:*)",
       "Bash(git checkout:*)",
       "Bash(git pull:*)",
-      "Bash(git branch:*)"
+      "Bash(git branch:*)",
+      "mcp__claude-memory__add_conversation",
+      "Bash(gh pr view:*)",
+      "Bash(mypy:*)",
+      "Bash(gh run view:*)",
+      "Bash(git push:*)",
+      "Bash(gh pr checks:*)",
+      "mcp__sonarcloud__get_project_quality_gate_status",
+      "Bash(python -m pytest:*)",
+      "Bash(pytest:*)"
     ],
     "deny": [],
     "ask": []
