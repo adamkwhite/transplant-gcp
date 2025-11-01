@@ -10,7 +10,9 @@
       "Bash(git add:*)",
       "Bash(git checkout:*)",
       "Bash(git pull:*)",
-      "Bash(git branch:*)"
+      "Bash(git branch:*)",
+      "mcp__claude-memory__add_conversation",
+      "Bash(gh pr view:*)"
     ],
     "deny": [],
     "ask": []

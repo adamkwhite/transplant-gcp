@@ -128,7 +128,7 @@ Document what changed during this session:
 - Technical debt identified
 - Compatibility concerns
 
-### Update CHANGELOG.md (if exists)
+### Update CHANGELOG.md (creat if doesn't exist)
 Document changes for version tracking:
 - Features added
 - Bugs fixed
