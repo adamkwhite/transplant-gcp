@@ -16,7 +16,10 @@
       "Bash(mypy:*)",
       "Bash(gh run view:*)",
       "Bash(git push:*)",
-      "Bash(gh pr checks:*)"
+      "Bash(gh pr checks:*)",
+      "mcp__sonarcloud__get_project_quality_gate_status",
+      "Bash(python -m pytest:*)",
+      "Bash(pytest:*)"
     ],
     "deny": [],
     "ask": []

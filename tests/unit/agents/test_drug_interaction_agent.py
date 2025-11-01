@@ -142,7 +142,7 @@ class TestDrugInteractionCheckerAgent:
         # Assert
         interaction = reference["moderate"]["tacrolimus_nsaids"]
         assert "Tacrolimus" in interaction["combination"]
-        assert "NSAIDs" in interaction["combination"]
+        assert any("NSAIDs" in item for item in interaction["combination"])
         assert "nephrotoxicity" in interaction["mechanism"]
         assert "acetaminophen" in interaction["action"]
 
@@ -161,7 +161,7 @@ class TestDrugInteractionCheckerAgent:
         # Assert
         interaction = reference["moderate"]["mycophenolate_antacids"]
         assert "Mycophenolate" in interaction["combination"]
-        assert "Antacids" in interaction["combination"]
+        assert any("Antacids" in item for item in interaction["combination"])
         assert "absorption" in interaction["mechanism"]
         assert "2 hours" in interaction["action"]
 

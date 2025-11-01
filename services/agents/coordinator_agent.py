@@ -157,7 +157,15 @@ Respond with JSON: {{
             agents_needed.append("SymptomMonitor")
         if any(
             word in request_lower
-            for word in ["interaction", "taking", "new medication", "food", "grapefruit"]
+            for word in [
+                "interaction",
+                "taking",
+                "new medication",
+                "food",
+                "grapefruit",
+                "ibuprofen",
+                "supplement",
+            ]
         ):
             agents_needed.append("DrugInteractionChecker")
 

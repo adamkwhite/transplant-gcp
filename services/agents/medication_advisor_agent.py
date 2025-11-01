@@ -168,7 +168,7 @@ class MedicationAdvisorAgent:
             "mycophenolate": {
                 "window_hours": 12,
                 "critical_period": 6,
-                "guidance": "Important immunosuppressant - can be flexible within window",
+                "guidance": "Important antiproliferative immunosuppressant - can be flexible within window",
             },
             "prednisone": {
                 "window_hours": 24,
