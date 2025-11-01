@@ -14,7 +14,9 @@
       "mcp__claude-memory__add_conversation",
       "Bash(gh pr view:*)",
       "Bash(mypy:*)",
-      "Bash(gh run view:*)"
+      "Bash(gh run view:*)",
+      "Bash(git push:*)",
+      "Bash(gh pr checks:*)"
     ],
     "deny": [],
     "ask": []

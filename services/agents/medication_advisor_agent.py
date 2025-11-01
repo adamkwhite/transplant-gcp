@@ -40,7 +40,7 @@ class MedicationAdvisorAgent:
         # Create ADK agent instance with generation config
         generate_config = types.GenerateContentConfig(
             temperature=DEFAULT_GENERATION_CONFIG["temperature"],
-            max_output_tokens=DEFAULT_GENERATION_CONFIG["max_output_tokens"],
+            max_output_tokens=int(DEFAULT_GENERATION_CONFIG["max_output_tokens"]),
             top_p=DEFAULT_GENERATION_CONFIG["top_p"],
             top_k=DEFAULT_GENERATION_CONFIG["top_k"],
         )
