@@ -7,7 +7,8 @@ evidence-based recommendations for transplant patients.
 
 from typing import Any
 
-from google.adk.agents import Agent
+from google.adk.agents import Agent  # type: ignore[import-untyped]
+from google.genai import types  # type: ignore[import-untyped]
 
 from services.config.adk_config import (
     DEFAULT_GENERATION_CONFIG,
@@ -36,13 +37,20 @@ class MedicationAdvisorAgent:
         """
         self.api_key = api_key or GEMINI_API_KEY
 
-        # Create ADK agent instance
+        # Create ADK agent instance with generation config
+        generate_config = types.GenerateContentConfig(
+            temperature=DEFAULT_GENERATION_CONFIG["temperature"],
+            max_output_tokens=DEFAULT_GENERATION_CONFIG["max_output_tokens"],
+            top_p=DEFAULT_GENERATION_CONFIG["top_p"],
+            top_k=DEFAULT_GENERATION_CONFIG["top_k"],
+        )
+
         self.agent = Agent(
             name=MEDICATION_ADVISOR_CONFIG["name"],
             model=MEDICATION_ADVISOR_CONFIG["model"],
             description=MEDICATION_ADVISOR_CONFIG["description"],
             instruction=MEDICATION_ADVISOR_CONFIG["instruction"],
-            generation_config=DEFAULT_GENERATION_CONFIG,
+            generate_content_config=generate_config,
         )
 
     def analyze_missed_dose(
@@ -81,7 +89,7 @@ class MedicationAdvisorAgent:
         )
 
         # Invoke agent (ADK handles session management)
-        response = self.agent.run(prompt)
+        response = self.agent.run(prompt)  # type: ignore[attr-defined]
 
         # Parse agent response
         return self._parse_agent_response(response)

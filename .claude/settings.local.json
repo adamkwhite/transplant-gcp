@@ -12,7 +12,9 @@
       "Bash(git pull:*)",
       "Bash(git branch:*)",
       "mcp__claude-memory__add_conversation",
-      "Bash(gh pr view:*)"
+      "Bash(gh pr view:*)",
+      "Bash(mypy:*)",
+      "Bash(gh run view:*)"
     ],
     "deny": [],
     "ask": []

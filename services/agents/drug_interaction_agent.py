@@ -7,7 +7,8 @@ drug-drug, drug-food, and drug-supplement interactions for transplant patients.
 
 from typing import Any
 
-from google.adk.agents import Agent
+from google.adk.agents import Agent  # type: ignore[import-untyped]
+from google.genai import types  # type: ignore[import-untyped]
 
 from services.config.adk_config import (
     DEFAULT_GENERATION_CONFIG,
@@ -36,13 +37,20 @@ class DrugInteractionCheckerAgent:
         """
         self.api_key = api_key or GEMINI_API_KEY
 
-        # Create ADK agent instance (uses GEMINI_MODEL_LITE for faster checks)
+        # Create ADK agent instance with generation config (uses GEMINI_MODEL_LITE for faster checks)
+        generate_config = types.GenerateContentConfig(
+            temperature=DEFAULT_GENERATION_CONFIG["temperature"],
+            max_output_tokens=DEFAULT_GENERATION_CONFIG["max_output_tokens"],
+            top_p=DEFAULT_GENERATION_CONFIG["top_p"],
+            top_k=DEFAULT_GENERATION_CONFIG["top_k"],
+        )
+
         self.agent = Agent(
             name=DRUG_INTERACTION_CONFIG["name"],
             model=DRUG_INTERACTION_CONFIG["model"],
             description=DRUG_INTERACTION_CONFIG["description"],
             instruction=DRUG_INTERACTION_CONFIG["instruction"],
-            generation_config=DEFAULT_GENERATION_CONFIG,
+            generate_content_config=generate_config,
         )
 
     def check_interaction(
@@ -83,7 +91,7 @@ class DrugInteractionCheckerAgent:
         )
 
         # Invoke agent (ADK handles session management)
-        response = self.agent.run(prompt)
+        response = self.agent.run(prompt)  # type: ignore[attr-defined]
 
         # Parse agent response
         return self._parse_agent_response(response)

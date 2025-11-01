@@ -7,7 +7,8 @@ specialist agents and synthesizes their responses.
 
 from typing import Any
 
-from google.adk.agents import Agent
+from google.adk.agents import Agent  # type: ignore[import-untyped]
+from google.genai import types  # type: ignore[import-untyped]
 
 from services.config.adk_config import (
     COORDINATOR_CONFIG,
@@ -45,13 +46,20 @@ class TransplantCoordinatorAgent:
         """
         self.api_key = api_key or GEMINI_API_KEY
 
-        # Create ADK agent instance
+        # Create ADK agent instance with generation config
+        generate_config = types.GenerateContentConfig(
+            temperature=DEFAULT_GENERATION_CONFIG["temperature"],
+            max_output_tokens=DEFAULT_GENERATION_CONFIG["max_output_tokens"],
+            top_p=DEFAULT_GENERATION_CONFIG["top_p"],
+            top_k=DEFAULT_GENERATION_CONFIG["top_k"],
+        )
+
         self.agent = Agent(
             name=COORDINATOR_CONFIG["name"],
             model=COORDINATOR_CONFIG["model"],
             description=COORDINATOR_CONFIG["description"],
             instruction=COORDINATOR_CONFIG["instruction"],
-            generation_config=DEFAULT_GENERATION_CONFIG,
+            generate_content_config=generate_config,
         )
 
         # Store specialist agent references
@@ -125,7 +133,7 @@ Respond with JSON: {{
     "request_type": "missed_dose|symptom_check|interaction_check|multi_concern"
 }}"""
 
-        response = self.agent.run(prompt)
+        response = self.agent.run(prompt)  # type: ignore[attr-defined]
 
         # Parse routing decision (simplified for now)
         # In real implementation, parse JSON from response
@@ -259,7 +267,7 @@ Respond with JSON: {{
         )
 
         synthesis_prompt = "\n".join(prompt_parts)
-        coordinator_response = self.agent.run(synthesis_prompt)
+        coordinator_response = self.agent.run(synthesis_prompt)  # type: ignore[attr-defined]
 
         return {
             "agents_consulted": list(specialist_responses.keys()),
