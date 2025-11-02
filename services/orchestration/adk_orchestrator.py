@@ -13,6 +13,7 @@ from typing import Any
 
 from google.adk.agents import Agent  # type: ignore[import-untyped]
 from google.adk.runners import Runner  # type: ignore[import-untyped]
+from google.adk.sessions import InMemorySessionService  # type: ignore[import-untyped]
 from google.genai import types  # type: ignore[import-untyped]
 
 from services.config.adk_config import (
@@ -195,6 +196,7 @@ Action: transfer_to_agent(agent_name='MedicationAdvisor') first, then SymptomMon
         runner = Runner(
             agent=self.coordinator,
             app_name="transplant_medication_adherence",
+            session_service=InMemorySessionService(),
         )
 
         # Run the coordinator agent using the runner
