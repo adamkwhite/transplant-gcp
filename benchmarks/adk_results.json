@@ -1,22 +1,22 @@
 {
   "benchmark_metadata": {
     "orchestration_method": "ADK Native",
-    "timestamp": "2025-11-01T22:33:32.629590",
+    "timestamp": "2025-11-02T00:44:31.729404",
     "adk_version": "1.17.0"
   },
   "statistics": {
     "total_tests": 9,
     "latency": {
-      "min_ms": 1487.4894618988037,
-      "max_ms": 3836.2627029418945,
-      "avg_ms": 2685.845454533895,
-      "median_ms": 2888.7271881103516
+      "min_ms": 1421.5087890625,
+      "max_ms": 4296.903848648071,
+      "avg_ms": 2721.559312608507,
+      "median_ms": 2514.819860458374
     },
     "token_usage": {
-      "min_tokens": 227,
-      "max_tokens": 662,
-      "avg_tokens": 436.8888888888889,
-      "total_tokens": 3932
+      "min_tokens": 177,
+      "max_tokens": 700,
+      "avg_tokens": 386.8888888888889,
+      "total_tokens": 3482
     },
     "routing_accuracy": {
       "correct": 9,
@@ -28,11 +28,11 @@
     {
       "test_name": "Missed Dose - Formal",
       "user_request": "I missed my tacrolimus dose at 8 AM, it is now 2 PM",
-      "latency_ms": 2888.7271881103516,
+      "latency_ms": 3284.029483795166,
       "token_usage": {
         "input": 12,
-        "output": 433,
-        "total": 445
+        "output": 551,
+        "total": 563
       },
       "agents_consulted": [],
       "routing_path": [
@@ -40,16 +40,16 @@
       ],
       "routing_correct": true,
       "expected_agent": "MedicationAdvisor",
-      "timestamp": "2025-11-01T22:33:11.345179"
+      "timestamp": "2025-11-02T00:44:10.518544"
     },
     {
       "test_name": "Missed Dose - Casual",
       "user_request": "Forgot to take my meds this morning, what should I do?",
-      "latency_ms": 2380.0878524780273,
+      "latency_ms": 3532.414197921753,
       "token_usage": {
         "input": 13,
-        "output": 320,
-        "total": 333
+        "output": 536,
+        "total": 549
       },
       "agents_consulted": [],
       "routing_path": [
@@ -57,16 +57,16 @@
       ],
       "routing_correct": true,
       "expected_agent": "MedicationAdvisor",
-      "timestamp": "2025-11-01T22:33:13.725306"
+      "timestamp": "2025-11-02T00:44:14.051020"
     },
     {
       "test_name": "Symptom - Fever",
       "user_request": "I have a fever of 101\u00b0F and feel weak",
-      "latency_ms": 2539.24298286438,
+      "latency_ms": 2514.819860458374,
       "token_usage": {
         "input": 9,
-        "output": 410,
-        "total": 419
+        "output": 413,
+        "total": 422
       },
       "agents_consulted": [],
       "routing_path": [
@@ -74,16 +74,16 @@
       ],
       "routing_correct": true,
       "expected_agent": "SymptomMonitor",
-      "timestamp": "2025-11-01T22:33:16.264584"
+      "timestamp": "2025-11-02T00:44:16.565877"
     },
     {
       "test_name": "Symptom - Decreased Urine",
       "user_request": "My urine output has decreased significantly today",
-      "latency_ms": 3836.2627029418945,
+      "latency_ms": 4296.903848648071,
       "token_usage": {
         "input": 12,
-        "output": 650,
-        "total": 662
+        "output": 688,
+        "total": 700
       },
       "agents_consulted": [],
       "routing_path": [
@@ -91,16 +91,16 @@
       ],
       "routing_correct": true,
       "expected_agent": "SymptomMonitor",
-      "timestamp": "2025-11-01T22:33:20.100896"
+      "timestamp": "2025-11-02T00:44:20.862832"
     },
     {
       "test_name": "Drug Interaction - Ibuprofen",
       "user_request": "Can I take ibuprofen for my headache? I'm on tacrolimus",
-      "latency_ms": 2271.660566329956,
+      "latency_ms": 2113.9161586761475,
       "token_usage": {
         "input": 13,
-        "output": 349,
-        "total": 362
+        "output": 301,
+        "total": 314
       },
       "agents_consulted": [],
       "routing_path": [
@@ -108,16 +108,16 @@
       ],
       "routing_correct": true,
       "expected_agent": "DrugInteractionChecker",
-      "timestamp": "2025-11-01T22:33:22.372634"
+      "timestamp": "2025-11-02T00:44:22.977036"
     },
     {
       "test_name": "Drug Interaction - Grapefruit",
       "user_request": "Is it safe to eat grapefruit with my medications?",
-      "latency_ms": 1487.4894618988037,
+      "latency_ms": 3998.462438583374,
       "token_usage": {
         "input": 12,
-        "output": 215,
-        "total": 227
+        "output": 337,
+        "total": 349
       },
       "agents_consulted": [],
       "routing_path": [
@@ -125,16 +125,16 @@
       ],
       "routing_correct": true,
       "expected_agent": "DrugInteractionChecker",
-      "timestamp": "2025-11-01T22:33:23.860163"
+      "timestamp": "2025-11-02T00:44:26.975537"
     },
     {
       "test_name": "Turn 1 - Vague Question",
       "user_request": "What should I do?",
-      "latency_ms": 2905.635356903076,
+      "latency_ms": 1421.5087890625,
       "token_usage": {
         "input": 4,
-        "output": 491,
-        "total": 495
+        "output": 188,
+        "total": 192
       },
       "agents_consulted": [],
       "routing_path": [
@@ -142,16 +142,16 @@
       ],
       "routing_correct": true,
       "expected_agent": "TransplantCoordinator",
-      "timestamp": "2025-11-01T22:33:26.765936"
+      "timestamp": "2025-11-02T00:44:28.397220"
     },
     {
       "test_name": "Turn 2 - Clarify Missed Dose",
       "user_request": "About my missed dose",
-      "latency_ms": 2959.0513706207275,
+      "latency_ms": 1898.9200592041016,
       "token_usage": {
         "input": 5,
-        "output": 485,
-        "total": 490
+        "output": 211,
+        "total": 216
       },
       "agents_consulted": [],
       "routing_path": [
@@ -159,16 +159,16 @@
       ],
       "routing_correct": true,
       "expected_agent": "MedicationAdvisor",
-      "timestamp": "2025-11-01T22:33:29.725020"
+      "timestamp": "2025-11-02T00:44:30.296200"
     },
     {
       "test_name": "Turn 3 - Provide Details",
       "user_request": "Tacrolimus at 8 AM, it's now 2 PM",
-      "latency_ms": 2904.451608657837,
+      "latency_ms": 1433.0589771270752,
       "token_usage": {
         "input": 8,
-        "output": 491,
-        "total": 499
+        "output": 169,
+        "total": 177
       },
       "agents_consulted": [],
       "routing_path": [
@@ -176,7 +176,7 @@
       ],
       "routing_correct": true,
       "expected_agent": "MedicationAdvisor",
-      "timestamp": "2025-11-01T22:33:32.629505"
+      "timestamp": "2025-11-02T00:44:31.729302"
     }
   ]
 }
