@@ -1,96 +1,186 @@
 {
-  "timestamp": "2025-11-01T22:18:38.872776",
-  "num_iterations": 5,
+  "timestamp": "2025-11-02T09:12:41.948768",
+  "num_iterations": 10,
   "emulator_host": "localhost:8085",
   "single_agent_latencies": [
     {
-      "total_latency": 0.1403486728668213,
-      "publish_latency": 0.014329671859741211,
-      "agent_processing_time": 5.7220458984375e-06,
-      "message_overhead": 0.14034295082092285,
+      "total_latency": 0.2886836528778076,
+      "publish_latency": 0.014927387237548828,
+      "agent_processing_time": 0.0,
+      "message_overhead": 0.2886836528778076,
       "complete": true,
       "timeout": false
     },
     {
-      "total_latency": 0.08170557022094727,
-      "publish_latency": 0.013675451278686523,
-      "agent_processing_time": 5.7220458984375e-06,
-      "message_overhead": 0.08169984817504883,
+      "total_latency": 0.13374948501586914,
+      "publish_latency": 0.013480424880981445,
+      "agent_processing_time": 0.0,
+      "message_overhead": 0.13374948501586914,
       "complete": true,
       "timeout": false
     },
     {
-      "total_latency": 0.08452868461608887,
-      "publish_latency": 0.015321493148803711,
-      "agent_processing_time": 4.0531158447265625e-06,
-      "message_overhead": 0.08452463150024414,
+      "total_latency": 0.13303518295288086,
+      "publish_latency": 0.013320446014404297,
+      "agent_processing_time": 0.0,
+      "message_overhead": 0.13303518295288086,
       "complete": true,
       "timeout": false
     },
     {
-      "total_latency": 0.13602066040039062,
-      "publish_latency": 0.013247489929199219,
-      "agent_processing_time": 3.5762786865234375e-06,
-      "message_overhead": 0.1360170841217041,
+      "total_latency": 0.13838791847229004,
+      "publish_latency": 0.015300989151000977,
+      "agent_processing_time": 0.0,
+      "message_overhead": 0.13838791847229004,
       "complete": true,
       "timeout": false
     },
     {
-      "total_latency": 0.08059024810791016,
-      "publish_latency": 0.013123273849487305,
-      "agent_processing_time": 3.24249267578125e-05,
-      "message_overhead": 0.08055782318115234,
+      "total_latency": 0.1449122428894043,
+      "publish_latency": 0.01286172866821289,
+      "agent_processing_time": 0.0,
+      "message_overhead": 0.1449122428894043,
+      "complete": true,
+      "timeout": false
+    },
+    {
+      "total_latency": 0.13834810256958008,
+      "publish_latency": 0.013509511947631836,
+      "agent_processing_time": 0.0,
+      "message_overhead": 0.13834810256958008,
+      "complete": true,
+      "timeout": false
+    },
+    {
+      "total_latency": 0.14653730392456055,
+      "publish_latency": 0.013851642608642578,
+      "agent_processing_time": 0.0,
+      "message_overhead": 0.14653730392456055,
+      "complete": true,
+      "timeout": false
+    },
+    {
+      "total_latency": 0.14049983024597168,
+      "publish_latency": 0.012993574142456055,
+      "agent_processing_time": 0.0,
+      "message_overhead": 0.14049983024597168,
+      "complete": true,
+      "timeout": false
+    },
+    {
+      "total_latency": 0.14421391487121582,
+      "publish_latency": 0.014066457748413086,
+      "agent_processing_time": 0.0,
+      "message_overhead": 0.14421391487121582,
+      "complete": true,
+      "timeout": false
+    },
+    {
+      "total_latency": 0.20055246353149414,
+      "publish_latency": 0.017255783081054688,
+      "agent_processing_time": 0.0,
+      "message_overhead": 0.20055246353149414,
       "complete": true,
       "timeout": false
     }
   ],
   "multi_agent_latencies": [
     {
-      "total_latency": 0.15983033180236816,
-      "publish_latency": 0.040647268295288086,
-      "avg_agent_processing_time": 5.880991617838542e-06,
-      "max_agent_processing_time": 7.152557373046875e-06,
-      "message_overhead": 0.15982317924499512,
+      "total_latency": 0.23276877403259277,
+      "publish_latency": 0.051998138427734375,
+      "avg_agent_processing_time": 0.0,
+      "max_agent_processing_time": 0.0,
+      "message_overhead": 0.23276877403259277,
+      "responses_received": 9,
+      "complete": true,
+      "timeout": false
+    },
+    {
+      "total_latency": 0.22488737106323242,
+      "publish_latency": 0.05084729194641113,
+      "avg_agent_processing_time": 0.0,
+      "max_agent_processing_time": 0.0,
+      "message_overhead": 0.22488737106323242,
+      "responses_received": 8,
+      "complete": true,
+      "timeout": false
+    },
+    {
+      "total_latency": 0.27225255966186523,
+      "publish_latency": 0.04122352600097656,
+      "avg_agent_processing_time": 0.0,
+      "max_agent_processing_time": 0.0,
+      "message_overhead": 0.27225255966186523,
+      "responses_received": 8,
+      "complete": true,
+      "timeout": false
+    },
+    {
+      "total_latency": 0.29538774490356445,
+      "publish_latency": 0.05681443214416504,
+      "avg_agent_processing_time": 0.0,
+      "max_agent_processing_time": 0.0,
+      "message_overhead": 0.29538774490356445,
+      "responses_received": 10,
+      "complete": true,
+      "timeout": false
+    },
+    {
+      "total_latency": 0.4883894920349121,
+      "publish_latency": 0.048720598220825195,
+      "avg_agent_processing_time": 0.0,
+      "max_agent_processing_time": 0.0,
+      "message_overhead": 0.4883894920349121,
+      "responses_received": 10,
+      "complete": true,
+      "timeout": false
+    },
+    {
+      "total_latency": 0.31566476821899414,
+      "publish_latency": 0.07621026039123535,
+      "avg_agent_processing_time": 0.0,
+      "max_agent_processing_time": 0.0,
+      "message_overhead": 0.31566476821899414,
+      "responses_received": 8,
+      "complete": true,
+      "timeout": false
+    },
+    {
+      "total_latency": 0.2739434242248535,
+      "publish_latency": 0.04462862014770508,
+      "avg_agent_processing_time": 0.0,
+      "max_agent_processing_time": 0.0,
+      "message_overhead": 0.2739434242248535,
+      "responses_received": 5,
+      "complete": true,
+      "timeout": false
+    },
+    {
+      "total_latency": 0.3257122039794922,
+      "publish_latency": 0.05294394493103027,
+      "avg_agent_processing_time": 0.0,
+      "max_agent_processing_time": 0.0,
+      "message_overhead": 0.3257122039794922,
       "responses_received": 3,
       "complete": true,
       "timeout": false
     },
     {
-      "total_latency": 0.11739301681518555,
-      "publish_latency": 0.04242706298828125,
-      "avg_agent_processing_time": 6.516774495442708e-06,
-      "max_agent_processing_time": 8.106231689453125e-06,
-      "message_overhead": 0.1173849105834961,
+      "total_latency": 0.4084053039550781,
+      "publish_latency": 0.05092215538024902,
+      "avg_agent_processing_time": 0.0,
+      "max_agent_processing_time": 0.0,
+      "message_overhead": 0.4084053039550781,
       "responses_received": 3,
       "complete": true,
       "timeout": false
     },
     {
-      "total_latency": 0.11742258071899414,
-      "publish_latency": 0.04146766662597656,
-      "avg_agent_processing_time": 3.8941701253255206e-06,
-      "max_agent_processing_time": 4.76837158203125e-06,
-      "message_overhead": 0.11741781234741211,
-      "responses_received": 3,
-      "complete": true,
-      "timeout": false
-    },
-    {
-      "total_latency": 0.11137080192565918,
-      "publish_latency": 0.04046177864074707,
-      "avg_agent_processing_time": 4.2120615641276044e-06,
-      "max_agent_processing_time": 4.76837158203125e-06,
-      "message_overhead": 0.11136603355407715,
-      "responses_received": 3,
-      "complete": true,
-      "timeout": false
-    },
-    {
-      "total_latency": 0.15773868560791016,
-      "publish_latency": 0.03866434097290039,
-      "avg_agent_processing_time": 4.450480143229167e-06,
-      "max_agent_processing_time": 5.9604644775390625e-06,
-      "message_overhead": 0.15773272514343262,
+      "total_latency": 0.3072075843811035,
+      "publish_latency": 0.05515766143798828,
+      "avg_agent_processing_time": 0.0,
+      "max_agent_processing_time": 0.0,
+      "message_overhead": 0.3072075843811035,
       "responses_received": 3,
       "complete": true,
       "timeout": false
@@ -99,24 +189,24 @@
   "processing_times": [],
   "message_overhead": [],
   "single_agent_summary": {
-    "mean_latency": 0.10463876724243164,
-    "median_latency": 0.08452868461608887,
-    "stdev_latency": 0.030694864388478602,
-    "min_latency": 0.08059024810791016,
-    "max_latency": 0.1403486728668213,
-    "mean_processing_time": 1.02996826171875e-05,
-    "mean_message_overhead": 0.10462846755981445,
+    "mean_latency": 0.16089200973510742,
+    "median_latency": 0.14235687255859375,
+    "stdev_latency": 0.048974423407377315,
+    "min_latency": 0.13303518295288086,
+    "max_latency": 0.2886836528778076,
+    "mean_processing_time": 0.0,
+    "mean_message_overhead": 0.16089200973510742,
     "success_rate": 1.0
   },
   "multi_agent_summary": {
-    "mean_latency": 0.13275108337402344,
-    "median_latency": 0.11742258071899414,
-    "stdev_latency": 0.02390405612926996,
-    "min_latency": 0.11137080192565918,
-    "max_latency": 0.15983033180236816,
-    "mean_avg_processing_time": 4.990895589192708e-06,
-    "mean_max_processing_time": 6.151199340820313e-06,
-    "mean_message_overhead": 0.1327449321746826,
+    "mean_latency": 0.3144619226455688,
+    "median_latency": 0.301297664642334,
+    "stdev_latency": 0.08009811586946312,
+    "min_latency": 0.22488737106323242,
+    "max_latency": 0.4883894920349121,
+    "mean_avg_processing_time": 0.0,
+    "mean_max_processing_time": 0.0,
+    "mean_message_overhead": 0.3144619226455688,
     "success_rate": 1.0
   }
 }
