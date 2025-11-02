@@ -5,13 +5,12 @@ Extracts structured parameters from natural language patient requests using LLM.
 Supports extraction of medication names, times, symptoms, and vital signs.
 """
 
+import asyncio
 import json
 import re
 from typing import Any
 
 from google.adk.agents import Agent  # type: ignore[import-untyped]
-from google.adk.runners import Runner  # type: ignore[import-untyped]
-from google.adk.sessions import InMemorySessionService  # type: ignore[import-untyped]
 from google.genai import types  # type: ignore[import-untyped]
 
 from services.config.adk_config import (
@@ -90,21 +89,9 @@ ALWAYS respond with valid JSON only, no extra text.
         prompt = self._build_extraction_prompt(request, extraction_type)
 
         try:
-            # Create a runner to execute the agent
-            runner = Runner(
-                agent=self.agent,
-                app_name="transplant_parameter_extraction",
-                session_service=InMemorySessionService(),
-            )
-
-            # Run the agent and collect response
-            response_text = ""
-            for event in runner.run(new_message=prompt):
-                # Collect text from events
-                if event.content and event.content.parts:
-                    for part in event.content.parts:
-                        if part.text:
-                            response_text += part.text
+            # Use run_async() which works with both ADK 1.16.0 and 1.17.0
+            response = asyncio.run(self.agent.run_async(prompt))  # type: ignore[attr-defined]
+            response_text = str(response)
 
             # Extract JSON from response
             extracted = self._parse_json_response(response_text)
