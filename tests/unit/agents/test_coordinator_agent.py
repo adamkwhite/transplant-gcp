@@ -5,6 +5,15 @@ from unittest.mock import ANY, MagicMock, patch
 from services.agents.coordinator_agent import TransplantCoordinatorAgent
 
 
+def _async_return(value):
+    """Helper to create async return value for mocking."""
+
+    async def _return():
+        return value
+
+    return _return()
+
+
 class TestTransplantCoordinatorAgent:
     """Test suite for TransplantCoordinatorAgent."""
 
@@ -64,7 +73,7 @@ class TestTransplantCoordinatorAgent:
         # Arrange
         mock_agent_instance = MagicMock()
         mock_agent_class.return_value = mock_agent_instance
-        mock_agent_instance.run_async.return_value = "Routing analysis"
+        mock_agent_instance.run_async.return_value = _async_return("Routing analysis")
 
         agent = TransplantCoordinatorAgent(api_key="test_key")
 
@@ -75,7 +84,7 @@ class TestTransplantCoordinatorAgent:
         )
 
         # Assert
-        # Should call agent.run at least once for routing analysis
+        # Should call agent.run_async at least once for routing analysis
         assert mock_agent_instance.run_async.call_count >= 1
 
     @patch("services.agents.coordinator_agent.Agent")
@@ -87,7 +96,7 @@ class TestTransplantCoordinatorAgent:
         # Arrange
         mock_agent_instance = MagicMock()
         mock_agent_class.return_value = mock_agent_instance
-        mock_agent_instance.run_async.return_value = "Routing complete"
+        mock_agent_instance.run_async.return_value = _async_return("Routing complete")
 
         agent = TransplantCoordinatorAgent(api_key="test_key")
 
@@ -114,7 +123,7 @@ class TestTransplantCoordinatorAgent:
         # Arrange
         mock_agent_instance = MagicMock()
         mock_agent_class.return_value = mock_agent_instance
-        mock_agent_instance.run_async.return_value = "Routing"
+        mock_agent_instance.run_async.return_value = _async_return("Routing")
 
         agent = TransplantCoordinatorAgent(api_key="test_key")
 
@@ -135,7 +144,7 @@ class TestTransplantCoordinatorAgent:
         # Arrange
         mock_agent_instance = MagicMock()
         mock_agent_class.return_value = mock_agent_instance
-        mock_agent_instance.run_async.return_value = "Routing"
+        mock_agent_instance.run_async.return_value = _async_return("Routing")
 
         agent = TransplantCoordinatorAgent(api_key="test_key")
 
@@ -155,7 +164,7 @@ class TestTransplantCoordinatorAgent:
         # Arrange
         mock_agent_instance = MagicMock()
         mock_agent_class.return_value = mock_agent_instance
-        mock_agent_instance.run_async.return_value = "Routing"
+        mock_agent_instance.run_async.return_value = _async_return("Routing")
 
         agent = TransplantCoordinatorAgent(api_key="test_key")
 
@@ -175,7 +184,7 @@ class TestTransplantCoordinatorAgent:
         # Arrange
         mock_agent_instance = MagicMock()
         mock_agent_class.return_value = mock_agent_instance
-        mock_agent_instance.run_async.return_value = "Routing"
+        mock_agent_instance.run_async.return_value = _async_return("Routing")
 
         agent = TransplantCoordinatorAgent(api_key="test_key")
 

@@ -5,6 +5,15 @@ from unittest.mock import ANY, MagicMock, patch
 from services.agents.drug_interaction_agent import DrugInteractionCheckerAgent
 
 
+def _async_return(value):
+    """Helper to create async return value for mocking."""
+
+    async def _return():
+        return value
+
+    return _return()
+
+
 class TestDrugInteractionCheckerAgent:
     """Test suite for DrugInteractionCheckerAgent."""
 
@@ -40,7 +49,7 @@ class TestDrugInteractionCheckerAgent:
         # Arrange
         mock_agent_instance = MagicMock()
         mock_agent_class.return_value = mock_agent_instance
-        mock_agent_instance.run_async.return_value = "No interactions found"
+        mock_agent_instance.run_async.return_value = _async_return("No interactions found")
 
         agent = DrugInteractionCheckerAgent(api_key="test_key")
 
@@ -68,7 +77,7 @@ class TestDrugInteractionCheckerAgent:
         # Arrange
         mock_agent_instance = MagicMock()
         mock_agent_class.return_value = mock_agent_instance
-        mock_agent_instance.run_async.return_value = "Response"
+        mock_agent_instance.run_async.return_value = _async_return("Response")
 
         agent = DrugInteractionCheckerAgent(api_key="test_key")
 
@@ -262,7 +271,7 @@ class TestDrugInteractionCheckerAgent:
         # Arrange
         mock_agent_instance = MagicMock()
         mock_agent_class.return_value = mock_agent_instance
-        mock_agent_instance.run_async.return_value = "No interactions"
+        mock_agent_instance.run_async.return_value = _async_return("No interactions")
 
         agent = DrugInteractionCheckerAgent(api_key="test_key")
 

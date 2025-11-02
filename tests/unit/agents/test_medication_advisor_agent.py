@@ -5,6 +5,15 @@ from unittest.mock import ANY, MagicMock, patch
 from services.agents.medication_advisor_agent import MedicationAdvisorAgent
 
 
+def _async_return(value):
+    """Helper to create async return value for mocking."""
+
+    async def _return():
+        return value
+
+    return _return()
+
+
 class TestMedicationAdvisorAgent:
     """Test suite for MedicationAdvisorAgent."""
 
@@ -53,7 +62,7 @@ class TestMedicationAdvisorAgent:
         # Arrange
         mock_agent_instance = MagicMock()
         mock_agent_class.return_value = mock_agent_instance
-        mock_agent_instance.run_async.return_value = "Agent response"
+        mock_agent_instance.run_async.return_value = _async_return("Agent response")
 
         agent = MedicationAdvisorAgent(api_key="test_key")
 
@@ -91,7 +100,7 @@ class TestMedicationAdvisorAgent:
         # Arrange
         mock_agent_instance = MagicMock()
         mock_agent_class.return_value = mock_agent_instance
-        mock_agent_instance.run_async.return_value = "Agent response"
+        mock_agent_instance.run_async.return_value = _async_return("Agent response")
 
         agent = MedicationAdvisorAgent(api_key="test_key")
 
