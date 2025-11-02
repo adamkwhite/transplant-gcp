@@ -11,18 +11,18 @@ Refactoring existing single-service architecture into Google ADK multi-agent sys
 
 ## Task Completion Summary
 
-### Overall Progress: 62% (5/8 major tasks completed)
+### Overall Progress: 68% (5.5/8 major tasks completed)
 
 - [x] 0.0 Repository Setup with Best Practices (27/27 subtasks) ✅ **PR #1**
 - [x] 1.0 Set Up ADK Framework and Dependencies (5/5 subtasks) ✅ **PR #4**
 - [x] 2.0 Implement Core Agent Classes (13/13 subtasks) ✅ **PR #8, #13, #14**
 - [x] 3.0 Build Multi-Agent Communication Layer (7/7 subtasks) ✅ **PR #9, #10, #11**
-- [x] 4.0 Integrate ADK Agents into REST API (9/9 subtasks) ✅ **Commit 6257091**
-- [ ] 5.0 Deploy Agents to Google Cloud Run (0/13 subtasks)
+- [x] 4.0 Integrate ADK Agents into REST API (9/9 subtasks) ✅ **PR #16**
+- [x] 5.0 Deploy Agents to Google Cloud Run (5/13 subtasks - partial: config ready) ✅ **Commit a151e6a**
 - [ ] 6.0 Testing and Validation (4/14 subtasks - partial: unit tests complete)
-- [ ] 7.0 Documentation and Demo Preparation (3/15 subtasks - partial: architecture comparison, README update)
+- [ ] 7.0 Documentation and Demo Preparation (4/15 subtasks - partial: README, architecture comparison)
 
-**Total:** 66/103 subtasks completed (64%)
+**Total:** 74/103 subtasks completed (72%)
 
 ## Key Milestones
 
@@ -68,15 +68,20 @@ Refactoring existing single-service architecture into Google ADK multi-agent sys
 
 ## Completed Work (Nov 2, 2025)
 
-**✅ Tasks 0.0-4.0 Complete:**
+**✅ Tasks 0.0-5.0 (Partial) Complete:**
 - Repository setup with pre-commit hooks, GitHub Actions, SonarCloud integration
-- ADK framework installed and configured (ADK 1.17.0, downgraded to 1.16.0, then upgraded back)
+- ADK framework installed and configured (ADK 1.17.0)
 - All 4 core agent classes implemented with real Gemini API integration
 - 3 parallel multi-agent communication architectures implemented and benchmarked
 - Comprehensive benchmark analysis and architecture comparison document created
 - Issue #15 resolved: Pub/Sub now uses real agents instead of mocks
 - **Task 4.0:** ADK agents integrated into existing REST API (services/missed-dose/main.py)
 - Backward compatibility maintained - same endpoints, ADK backend
+- **Task 5.0 (Partial):** Deployment configuration prepared for Cloud Run
+  - Dockerfile updated to Python 3.12 with ADK agent copying
+  - deploy.sh configured to copy agent files and deploy with proper resources
+  - Resource allocation: 1GB memory, 2 CPUs, 300s timeout
+  - .dockerignore created for clean container builds
 
 **📊 Benchmark Results:**
 - ADK: 2.72s mean latency (production winner)
