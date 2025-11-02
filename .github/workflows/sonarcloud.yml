@@ -39,22 +39,14 @@ jobs:
 
       - name: Setup Pub/Sub Emulator
         run: |
-          # Set up Java for the emulator
-          sudo apt-get update -qq
-          sudo apt-get install -y -qq default-jre
-
-          # Download Pub/Sub emulator JAR
-          mkdir -p pubsub-emulator
-          curl -o pubsub-emulator/pubsub-emulator.jar \
-            https://storage.googleapis.com/pubsub-emulator/pubsub-emulator-latest.jar
-
-          # Start emulator in background
-          java -jar pubsub-emulator/pubsub-emulator.jar \
-            --host=localhost --port=8085 > /dev/null 2>&1 &
+          # Start Pub/Sub emulator using official Docker image
+          docker run -d --name pubsub-emulator -p 8085:8085 \
+            gcr.io/google.com/cloudsdktool/google-cloud-cli:emulators \
+            gcloud beta emulators pubsub start --host-port=0.0.0.0:8085
 
           # Wait for emulator to be ready
           echo "Waiting for Pub/Sub emulator to start..."
-          sleep 10
+          sleep 5
 
           # Create topics and subscriptions
           python scripts/create_pubsub_topics.py || echo "Topics creation script not found or failed"
