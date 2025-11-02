@@ -1,0 +1,182 @@
+{
+  "benchmark_metadata": {
+    "orchestration_method": "ADK Native",
+    "timestamp": "2025-11-02T00:44:31.729404",
+    "adk_version": "1.17.0"
+  },
+  "statistics": {
+    "total_tests": 9,
+    "latency": {
+      "min_ms": 1421.5087890625,
+      "max_ms": 4296.903848648071,
+      "avg_ms": 2721.559312608507,
+      "median_ms": 2514.819860458374
+    },
+    "token_usage": {
+      "min_tokens": 177,
+      "max_tokens": 700,
+      "avg_tokens": 386.8888888888889,
+      "total_tokens": 3482
+    },
+    "routing_accuracy": {
+      "correct": 9,
+      "total": 9,
+      "accuracy_pct": 100.0
+    }
+  },
+  "individual_results": [
+    {
+      "test_name": "Missed Dose - Formal",
+      "user_request": "I missed my tacrolimus dose at 8 AM, it is now 2 PM",
+      "latency_ms": 3284.029483795166,
+      "token_usage": {
+        "input": 12,
+        "output": 551,
+        "total": 563
+      },
+      "agents_consulted": [],
+      "routing_path": [
+        "TransplantCoordinator"
+      ],
+      "routing_correct": true,
+      "expected_agent": "MedicationAdvisor",
+      "timestamp": "2025-11-02T00:44:10.518544"
+    },
+    {
+      "test_name": "Missed Dose - Casual",
+      "user_request": "Forgot to take my meds this morning, what should I do?",
+      "latency_ms": 3532.414197921753,
+      "token_usage": {
+        "input": 13,
+        "output": 536,
+        "total": 549
+      },
+      "agents_consulted": [],
+      "routing_path": [
+        "TransplantCoordinator"
+      ],
+      "routing_correct": true,
+      "expected_agent": "MedicationAdvisor",
+      "timestamp": "2025-11-02T00:44:14.051020"
+    },
+    {
+      "test_name": "Symptom - Fever",
+      "user_request": "I have a fever of 101\u00b0F and feel weak",
+      "latency_ms": 2514.819860458374,
+      "token_usage": {
+        "input": 9,
+        "output": 413,
+        "total": 422
+      },
+      "agents_consulted": [],
+      "routing_path": [
+        "TransplantCoordinator"
+      ],
+      "routing_correct": true,
+      "expected_agent": "SymptomMonitor",
+      "timestamp": "2025-11-02T00:44:16.565877"
+    },
+    {
+      "test_name": "Symptom - Decreased Urine",
+      "user_request": "My urine output has decreased significantly today",
+      "latency_ms": 4296.903848648071,
+      "token_usage": {
+        "input": 12,
+        "output": 688,
+        "total": 700
+      },
+      "agents_consulted": [],
+      "routing_path": [
+        "TransplantCoordinator"
+      ],
+      "routing_correct": true,
+      "expected_agent": "SymptomMonitor",
+      "timestamp": "2025-11-02T00:44:20.862832"
+    },
+    {
+      "test_name": "Drug Interaction - Ibuprofen",
+      "user_request": "Can I take ibuprofen for my headache? I'm on tacrolimus",
+      "latency_ms": 2113.9161586761475,
+      "token_usage": {
+        "input": 13,
+        "output": 301,
+        "total": 314
+      },
+      "agents_consulted": [],
+      "routing_path": [
+        "TransplantCoordinator"
+      ],
+      "routing_correct": true,
+      "expected_agent": "DrugInteractionChecker",
+      "timestamp": "2025-11-02T00:44:22.977036"
+    },
+    {
+      "test_name": "Drug Interaction - Grapefruit",
+      "user_request": "Is it safe to eat grapefruit with my medications?",
+      "latency_ms": 3998.462438583374,
+      "token_usage": {
+        "input": 12,
+        "output": 337,
+        "total": 349
+      },
+      "agents_consulted": [],
+      "routing_path": [
+        "TransplantCoordinator"
+      ],
+      "routing_correct": true,
+      "expected_agent": "DrugInteractionChecker",
+      "timestamp": "2025-11-02T00:44:26.975537"
+    },
+    {
+      "test_name": "Turn 1 - Vague Question",
+      "user_request": "What should I do?",
+      "latency_ms": 1421.5087890625,
+      "token_usage": {
+        "input": 4,
+        "output": 188,
+        "total": 192
+      },
+      "agents_consulted": [],
+      "routing_path": [
+        "TransplantCoordinator"
+      ],
+      "routing_correct": true,
+      "expected_agent": "TransplantCoordinator",
+      "timestamp": "2025-11-02T00:44:28.397220"
+    },
+    {
+      "test_name": "Turn 2 - Clarify Missed Dose",
+      "user_request": "About my missed dose",
+      "latency_ms": 1898.9200592041016,
+      "token_usage": {
+        "input": 5,
+        "output": 211,
+        "total": 216
+      },
+      "agents_consulted": [],
+      "routing_path": [
+        "TransplantCoordinator"
+      ],
+      "routing_correct": true,
+      "expected_agent": "MedicationAdvisor",
+      "timestamp": "2025-11-02T00:44:30.296200"
+    },
+    {
+      "test_name": "Turn 3 - Provide Details",
+      "user_request": "Tacrolimus at 8 AM, it's now 2 PM",
+      "latency_ms": 1433.0589771270752,
+      "token_usage": {
+        "input": 8,
+        "output": 169,
+        "total": 177
+      },
+      "agents_consulted": [],
+      "routing_path": [
+        "TransplantCoordinator"
+      ],
+      "routing_correct": true,
+      "expected_agent": "MedicationAdvisor",
+      "timestamp": "2025-11-02T00:44:31.729302"
+    }
+  ]
+}
