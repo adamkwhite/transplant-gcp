@@ -13,12 +13,10 @@ from typing import Any
 
 from google.cloud import pubsub_v1
 
-# Import mock agents for testing (use these when real agents have API issues)
-from services.pubsub.mock_agents import (
-    MockDrugInteractionCheckerAgent,
-    MockMedicationAdvisorAgent,
-    MockSymptomMonitorAgent,
-)
+# Import real specialist agents (PR #14 fixed ADK 1.16.0 compatibility)
+from services.agents.drug_interaction_agent import DrugInteractionCheckerAgent
+from services.agents.medication_advisor_agent import MedicationAdvisorAgent
+from services.agents.symptom_monitor_agent import SymptomMonitorAgent
 
 
 class SpecialistSubscribers:
@@ -44,14 +42,17 @@ class SpecialistSubscribers:
         self.publisher = pubsub_v1.PublisherClient()
         self.response_topic = self.publisher.topic_path(project_id, "coordinator-responses")
 
-        # Initialize specialist agents
-        # NOTE: Using mock agents due to ADK API compatibility issues
-        # Replace with real agents once ADK API is fixed in main branch
-        self.medication_advisor = MockMedicationAdvisorAgent()  # MedicationAdvisorAgent()
-        self.symptom_monitor = MockSymptomMonitorAgent()  # SymptomMonitorAgent()
-        self.drug_interaction_checker = (
-            MockDrugInteractionCheckerAgent()
-        )  # DrugInteractionCheckerAgent()
+        # Initialize specialist agents with real Gemini API agents
+        # Requires GEMINI_API_KEY environment variable
+        api_key = os.environ.get("GEMINI_API_KEY")
+        if not api_key:
+            raise ValueError(
+                "GEMINI_API_KEY environment variable required for real agent operation"
+            )
+
+        self.medication_advisor = MedicationAdvisorAgent(api_key=api_key)
+        self.symptom_monitor = SymptomMonitorAgent(api_key=api_key)
+        self.drug_interaction_checker = DrugInteractionCheckerAgent(api_key=api_key)
 
     def on_medication_request(self, message: pubsub_v1.subscriber.message.Message) -> None:
         """
