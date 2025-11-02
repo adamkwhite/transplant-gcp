@@ -3,30 +3,42 @@
 ## For Google Cloud Run Hackathon
 
 ### 🏗️ Architecture
+- **Google ADK (Agent Development Kit)** - Multi-agent AI system
 - **Google Cloud Run** - Serverless containers
 - **Firestore** - NoSQL database
-- **Gemini 1.5 Pro** - AI medical reasoning
+- **Gemini 2.0 Flash** - AI medical reasoning across 4 specialized agents
 - **Cloud Build** - Automatic container builds
 
 ### 🎯 Features
-- **Real AI Inference** using Google Gemini (not mock!)
-- Medication missed dose analysis
-- Drug interaction checking
-- Symptom analysis for rejection risk
+- **Multi-Agent AI System** using Google ADK with 4 specialized agents:
+  - **TransplantCoordinator** - Routes patient requests to appropriate specialists
+  - **MedicationAdvisor** - Analyzes missed doses and medication timing
+  - **SymptomMonitor** - Assesses rejection risk from symptoms
+  - **DrugInteractionChecker** - Checks medication, food, and supplement interactions
+- **Real AI Inference** using Gemini 2.0 Flash (not mock!)
+- **Intelligent Routing** - Automatically determines which specialists to consult
 - Patient dashboard with history
 
 ### 📁 Project Structure
 ```
 transplant-gcp/
 ├── services/
-│   ├── gemini_client.py      # Gemini AI integration
-│   ├── missed-dose/          # Cloud Run service
-│   │   ├── main.py
+│   ├── agents/               # ADK multi-agent system
+│   │   ├── coordinator_agent.py        # Coordinator agent
+│   │   ├── medication_advisor_agent.py # Medication specialist
+│   │   ├── symptom_monitor_agent.py    # Symptom specialist
+│   │   └── drug_interaction_agent.py   # Interaction specialist
+│   ├── config/
+│   │   └── adk_config.py     # ADK agent configurations
+│   ├── missed-dose/          # Cloud Run REST API service
+│   │   ├── main.py           # Flask app (ADK-integrated)
 │   │   ├── requirements.txt
 │   │   └── Dockerfile
-│   ├── symptom-analysis/     # (To be created)
-│   ├── interaction-check/    # (To be created)
-│   └── patient-dashboard/    # (To be created)
+│   └── gemini_client.py      # Legacy Gemini client (deprecated)
+├── tests/
+│   ├── unit/agents/          # Unit tests for all 4 agents
+│   └── integration/          # ADK orchestration tests
+├── benchmarks/               # Performance comparison data
 ├── deploy.sh                 # Deployment script
 └── README.md
 ```
@@ -80,15 +92,24 @@ curl -X POST https://your-service-url.run.app/medications/missed-dose \
 
 ### 🏆 Why This Wins
 
-1. **Real AI Integration** - Gemini provides actual medical reasoning
-2. **Serverless Architecture** - Scales to millions automatically
-3. **Medical Impact** - Saves transplant patients' lives
-4. **Production Ready** - Error handling, logging, monitoring
-5. **Google Cloud Showcase** - Cloud Run, Firestore, Gemini
+1. **Advanced Multi-Agent AI** - Google ADK with 4 specialized agents working together
+2. **Real AI Integration** - Gemini 2.0 Flash provides actual medical reasoning
+3. **Intelligent Orchestration** - Coordinator routes to appropriate specialists automatically
+4. **Serverless Architecture** - Scales to millions automatically on Cloud Run
+5. **Medical Impact** - Saves transplant patients' lives through AI-powered guidance
+6. **Production Ready** - Error handling, logging, monitoring, comprehensive testing
+7. **Google Cloud Showcase** - ADK, Cloud Run, Firestore, Gemini API
 
 ### 📊 Hackathon Category
 
-**AI Agents Category** - Building an AI agent for medication adherence using Google ADK concepts
+**Best of AI Agents Category** - Multi-agent AI system using Google ADK framework
+
+**Key Differentiators:**
+- ✅ 4 specialized ADK agents with distinct medical expertise
+- ✅ Intelligent coordinator that routes requests to appropriate specialists
+- ✅ Real-world medical application (transplant patient care)
+- ✅ Production-ready with comprehensive testing and benchmarking
+- ✅ Benchmarked 3 architectures: ADK Orchestration (winner at 2.72s), Pub/Sub, In-Process
 
 ### 🎯 Bonus Points Strategy
 

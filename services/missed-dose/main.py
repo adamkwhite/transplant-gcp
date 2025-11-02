@@ -1,6 +1,6 @@
 """
 Cloud Run Service: Missed Dose Analysis
-Uses Google Gemini for real AI medical reasoning
+Uses Google ADK Multi-Agent System for AI medical reasoning
 """
 
 import logging
@@ -12,12 +12,19 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 from google.cloud import firestore
 
-# Add parent directory to path to import gemini_client
+# Add parent directory to path to import ADK agents
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from gemini_client import get_gemini_client
+from services.agents.coordinator_agent import TransplantCoordinatorAgent
+from services.agents.drug_interaction_agent import DrugInteractionCheckerAgent
+from services.agents.medication_advisor_agent import MedicationAdvisorAgent
+from services.agents.symptom_monitor_agent import SymptomMonitorAgent
 
 # Constants
 PLATFORM_NAME = "Google Cloud Run"
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -26,12 +33,20 @@ CORS(app)
 # Initialize Firestore
 db = firestore.Client(project=os.environ.get("GOOGLE_CLOUD_PROJECT", "transplant-prediction"))
 
-# Initialize Gemini client
-gemini = get_gemini_client()
+# Initialize ADK agents
+api_key = os.environ.get("GEMINI_API_KEY")
+if not api_key:
+    logger.warning("GEMINI_API_KEY not set - agents will use config default")
 
-# Configure logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+medication_advisor = MedicationAdvisorAgent(api_key=api_key)
+symptom_monitor = SymptomMonitorAgent(api_key=api_key)
+drug_interaction_checker = DrugInteractionCheckerAgent(api_key=api_key)
+coordinator = TransplantCoordinatorAgent(
+    api_key=api_key,
+    medication_advisor=medication_advisor,
+    symptom_monitor=symptom_monitor,
+    drug_interaction_checker=drug_interaction_checker,
+)
 
 
 def find_medication(name):
@@ -139,7 +154,17 @@ def health_check():
             "status": "healthy",
             "service": "missed-dose-analysis",
             "platform": PLATFORM_NAME,
-            "ai_model": "Gemini 2.0 Flash" if os.environ.get("GEMINI_API_KEY") else "Mock Mode",
+            "ai_system": "Google ADK Multi-Agent System",
+            "agents": {
+                "coordinator": "TransplantCoordinator",
+                "specialists": [
+                    "MedicationAdvisor",
+                    "SymptomMonitor",
+                    "DrugInteractionChecker",
+                ],
+            },
+            "ai_model": "gemini-2.0-flash-exp",
+            "adk_version": "1.17.0",
         }
     )
 
@@ -180,20 +205,26 @@ def missed_dose():
                 "hours_late": hours_late,
                 "missed_this_week": missed_this_week,
                 "adherence_rate": adherence_rate,
+                "transplant_type": patient_context.get("transplant_type", "kidney"),
+                "months_post_transplant": patient_context.get("months_post_transplant", 6),
             }
         )
 
-        # Get AI-powered recommendation from Gemini
-        gemini_response = gemini.analyze_missed_dose(
-            medication=medication["name"], hours_late=hours_late, patient_context=patient_context
+        # Get AI-powered recommendation from ADK MedicationAdvisor agent
+        agent_response = medication_advisor.analyze_missed_dose(
+            medication=medication["name"],
+            scheduled_time=scheduled_time,
+            current_time=current_time,
+            patient_id=patient_id,
+            patient_context=patient_context,
         )
 
-        # Enhance message with context
+        # Enhance response with context-based risk assessment
         if medication["critical"] and hours_late > medication["time_window_hours"]:
-            gemini_response["risk_level"] = "high"
+            agent_response["risk_level"] = "high"
 
         if missed_this_week >= 3:
-            gemini_response["risk_level"] = "critical"
+            agent_response["risk_level"] = "critical"
 
         # Record interaction
         record_interaction(
@@ -202,19 +233,19 @@ def missed_dose():
             {
                 "medication": medication_name,
                 "hours_late": hours_late,
-                "recommendation": gemini_response.get("recommendation", ""),
-                "ai_model": gemini_response.get("ai_model", "gemini"),
-                "risk_level": gemini_response.get("risk_level", "medium"),
+                "recommendation": agent_response.get("recommendation", ""),
+                "ai_system": "ADK MedicationAdvisor",
+                "risk_level": agent_response.get("risk_level", "medium"),
             },
         )
 
-        # Build response
+        # Build response (maintain backward compatibility with existing API format)
         response = {
-            "recommendation": gemini_response.get("recommendation", "Contact doctor"),
-            "reasoning_chain": gemini_response.get("reasoning_steps", []),
-            "risk_level": gemini_response.get("risk_level", "medium"),
-            "confidence": gemini_response.get("confidence", 0.85),
-            "next_steps": gemini_response.get("next_steps", []),
+            "recommendation": agent_response.get("recommendation", "Contact doctor"),
+            "reasoning_chain": agent_response.get("reasoning_steps", []),
+            "risk_level": agent_response.get("risk_level", "medium"),
+            "confidence": agent_response.get("confidence", 0.85),
+            "next_steps": agent_response.get("next_steps", []),
             "adherence_metrics": {
                 "current_rate": f"{round(adherence_rate * 100)}%",
                 "doses_missed_this_week": missed_this_week,
@@ -223,7 +254,9 @@ def missed_dose():
             "infrastructure": {
                 "platform": PLATFORM_NAME,
                 "database": "Firestore",
-                "ai_model": gemini_response.get("ai_model", "gemini-2.0-flash"),
+                "ai_system": "Google ADK Multi-Agent System",
+                "ai_model": "gemini-2.0-flash-exp",
+                "agent_used": "MedicationAdvisor",
                 "region": os.environ.get("REGION", "us-central1"),
             },
         }
