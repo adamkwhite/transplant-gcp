@@ -64,7 +64,7 @@ class TestTransplantCoordinatorAgent:
         # Arrange
         mock_agent_instance = MagicMock()
         mock_agent_class.return_value = mock_agent_instance
-        mock_agent_instance.run.return_value = "Routing analysis"
+        mock_agent_instance.run_async.return_value = "Routing analysis"
 
         agent = TransplantCoordinatorAgent(api_key="test_key")
 
@@ -76,7 +76,7 @@ class TestTransplantCoordinatorAgent:
 
         # Assert
         # Should call agent.run at least once for routing analysis
-        assert mock_agent_instance.run.call_count >= 1
+        assert mock_agent_instance.run_async.call_count >= 1
 
     @patch("services.agents.coordinator_agent.Agent")
     @patch("services.agents.coordinator_agent.types")
@@ -87,7 +87,7 @@ class TestTransplantCoordinatorAgent:
         # Arrange
         mock_agent_instance = MagicMock()
         mock_agent_class.return_value = mock_agent_instance
-        mock_agent_instance.run.return_value = "Routing complete"
+        mock_agent_instance.run_async.return_value = "Routing complete"
 
         agent = TransplantCoordinatorAgent(api_key="test_key")
 
@@ -114,7 +114,7 @@ class TestTransplantCoordinatorAgent:
         # Arrange
         mock_agent_instance = MagicMock()
         mock_agent_class.return_value = mock_agent_instance
-        mock_agent_instance.run.return_value = "Routing"
+        mock_agent_instance.run_async.return_value = "Routing"
 
         agent = TransplantCoordinatorAgent(api_key="test_key")
 
@@ -135,7 +135,7 @@ class TestTransplantCoordinatorAgent:
         # Arrange
         mock_agent_instance = MagicMock()
         mock_agent_class.return_value = mock_agent_instance
-        mock_agent_instance.run.return_value = "Routing"
+        mock_agent_instance.run_async.return_value = "Routing"
 
         agent = TransplantCoordinatorAgent(api_key="test_key")
 
@@ -155,7 +155,7 @@ class TestTransplantCoordinatorAgent:
         # Arrange
         mock_agent_instance = MagicMock()
         mock_agent_class.return_value = mock_agent_instance
-        mock_agent_instance.run.return_value = "Routing"
+        mock_agent_instance.run_async.return_value = "Routing"
 
         agent = TransplantCoordinatorAgent(api_key="test_key")
 
@@ -175,7 +175,7 @@ class TestTransplantCoordinatorAgent:
         # Arrange
         mock_agent_instance = MagicMock()
         mock_agent_class.return_value = mock_agent_instance
-        mock_agent_instance.run.return_value = "Routing"
+        mock_agent_instance.run_async.return_value = "Routing"
 
         agent = TransplantCoordinatorAgent(api_key="test_key")
 

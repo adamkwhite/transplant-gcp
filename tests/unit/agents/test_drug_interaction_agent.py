@@ -40,7 +40,7 @@ class TestDrugInteractionCheckerAgent:
         # Arrange
         mock_agent_instance = MagicMock()
         mock_agent_class.return_value = mock_agent_instance
-        mock_agent_instance.run.return_value = "No interactions found"
+        mock_agent_instance.run_async.return_value = "No interactions found"
 
         agent = DrugInteractionCheckerAgent(api_key="test_key")
 
@@ -52,8 +52,8 @@ class TestDrugInteractionCheckerAgent:
         )
 
         # Assert
-        mock_agent_instance.run.assert_called_once()
-        call_args = mock_agent_instance.run.call_args[0][0]
+        mock_agent_instance.run_async.assert_called_once()
+        call_args = mock_agent_instance.run_async.call_args[0][0]
         assert "tacrolimus" in call_args
         assert "prednisone" in call_args
         assert "grapefruit juice" in call_args
@@ -68,7 +68,7 @@ class TestDrugInteractionCheckerAgent:
         # Arrange
         mock_agent_instance = MagicMock()
         mock_agent_class.return_value = mock_agent_instance
-        mock_agent_instance.run.return_value = "Response"
+        mock_agent_instance.run_async.return_value = "Response"
 
         agent = DrugInteractionCheckerAgent(api_key="test_key")
 
@@ -262,7 +262,7 @@ class TestDrugInteractionCheckerAgent:
         # Arrange
         mock_agent_instance = MagicMock()
         mock_agent_class.return_value = mock_agent_instance
-        mock_agent_instance.run.return_value = "No interactions"
+        mock_agent_instance.run_async.return_value = "No interactions"
 
         agent = DrugInteractionCheckerAgent(api_key="test_key")
 
@@ -270,6 +270,6 @@ class TestDrugInteractionCheckerAgent:
         result = agent.check_interaction(medications=["tacrolimus"])
 
         # Assert
-        mock_agent_instance.run.assert_called_once()
+        mock_agent_instance.run_async.assert_called_once()
         assert result["has_interaction"] is False
         assert result["severity"] == "none"
