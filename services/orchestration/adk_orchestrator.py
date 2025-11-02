@@ -206,7 +206,11 @@ Action: transfer_to_agent(agent_name='MedicationAdvisor') first, then SymptomMon
         # - Session state management
         # - Multi-turn context
         response_text = ""
-        for event in runner.run(new_message=full_request):
+        for event in runner.run(
+            user_id=patient_id or "default_user",
+            session_id="session_" + (patient_id or "default"),
+            new_message=full_request,
+        ):
             # Collect text from events
             if event.content and event.content.parts:
                 for part in event.content.parts:
