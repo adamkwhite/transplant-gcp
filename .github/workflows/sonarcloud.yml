@@ -37,6 +37,8 @@ jobs:
           fi
 
       - name: Run tests with coverage
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: |
           # Check if tests exist before running
           if find tests/ -name "test_*.py" -type f 2>/dev/null | grep -q .; then
