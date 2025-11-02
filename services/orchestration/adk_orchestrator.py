@@ -12,6 +12,7 @@ This orchestrator wraps ADK's coordinator/dispatcher pattern.
 from typing import Any
 
 from google.adk.agents import Agent  # type: ignore[import-untyped]
+from google.adk.runners import Runner  # type: ignore[import-untyped]
 from google.genai import types  # type: ignore[import-untyped]
 
 from services.config.adk_config import (
@@ -189,16 +190,29 @@ Action: transfer_to_agent(agent_name='MedicationAdvisor') first, then SymptomMon
             conversation_history=conversation_history,
         )
 
-        # Run coordinator agent
-        # ADK's AutoFlow automatically handles:
+        # Create a runner to execute the coordinator agent
+        # The runner handles the event loop and session management
+        runner = Runner(
+            agent=self.coordinator,
+            app_name="transplant_medication_adherence",
+        )
+
+        # Run the coordinator agent using the runner
+        # ADK's Runner + AutoFlow automatically handles:
         # - transfer_to_agent() function calls
         # - Routing to sub-agents
         # - Session state management
         # - Multi-turn context
-        response = self.coordinator.run(full_request)  # type: ignore[attr-defined]
+        response_text = ""
+        for event in runner.run(new_message=full_request):
+            # Collect text from events
+            if event.content and event.content.parts:
+                for part in event.content.parts:
+                    if part.text:
+                        response_text += part.text
 
         # Parse response
-        return self._parse_orchestrator_response(response)
+        return self._parse_orchestrator_response(response_text)
 
     def _build_request_with_context(
         self,
