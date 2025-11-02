@@ -5,6 +5,7 @@ Subscriber callbacks that receive requests from coordinator and invoke specialis
 Each subscriber publishes results back to the coordinator-responses topic.
 """
 
+import contextlib
 import json
 import os
 import time
@@ -12,9 +13,12 @@ from typing import Any
 
 from google.cloud import pubsub_v1
 
-from services.agents.drug_interaction_agent import DrugInteractionCheckerAgent
-from services.agents.medication_advisor_agent import MedicationAdvisorAgent
-from services.agents.symptom_monitor_agent import SymptomMonitorAgent
+# Import mock agents for testing (use these when real agents have API issues)
+from services.pubsub.mock_agents import (
+    MockDrugInteractionCheckerAgent,
+    MockMedicationAdvisorAgent,
+    MockSymptomMonitorAgent,
+)
 
 
 class SpecialistSubscribers:
@@ -41,9 +45,13 @@ class SpecialistSubscribers:
         self.response_topic = self.publisher.topic_path(project_id, "coordinator-responses")
 
         # Initialize specialist agents
-        self.medication_advisor = MedicationAdvisorAgent()
-        self.symptom_monitor = SymptomMonitorAgent()
-        self.drug_interaction_checker = DrugInteractionCheckerAgent()
+        # NOTE: Using mock agents due to ADK API compatibility issues
+        # Replace with real agents once ADK API is fixed in main branch
+        self.medication_advisor = MockMedicationAdvisorAgent()  # MedicationAdvisorAgent()
+        self.symptom_monitor = MockSymptomMonitorAgent()  # SymptomMonitorAgent()
+        self.drug_interaction_checker = (
+            MockDrugInteractionCheckerAgent()
+        )  # DrugInteractionCheckerAgent()
 
     def on_medication_request(self, message: pubsub_v1.subscriber.message.Message) -> None:
         """
@@ -93,8 +101,9 @@ class SpecialistSubscribers:
 
         except Exception as e:
             print(f"Error processing medication request: {e}")
-            # Publish error response
-            self._publish_error_response(request_data, str(e))
+            # Publish error response if we have request data
+            with contextlib.suppress(NameError):
+                self._publish_error_response(request_data, str(e))
             message.nack()
 
     def on_symptom_request(self, message: pubsub_v1.subscriber.message.Message) -> None:
@@ -144,8 +153,9 @@ class SpecialistSubscribers:
 
         except Exception as e:
             print(f"Error processing symptom request: {e}")
-            # Publish error response
-            self._publish_error_response(request_data, str(e))
+            # Publish error response if we have request data
+            with contextlib.suppress(NameError):
+                self._publish_error_response(request_data, str(e))
             message.nack()
 
     def on_drug_interaction_request(self, message: pubsub_v1.subscriber.message.Message) -> None:
@@ -206,8 +216,9 @@ class SpecialistSubscribers:
 
         except Exception as e:
             print(f"Error processing interaction request: {e}")
-            # Publish error response
-            self._publish_error_response(request_data, str(e))
+            # Publish error response if we have request data
+            with contextlib.suppress(NameError):
+                self._publish_error_response(request_data, str(e))
             message.nack()
 
     def _publish_response(self, response_data: dict[str, Any]) -> None:

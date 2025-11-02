@@ -1,0 +1,122 @@
+{
+  "timestamp": "2025-11-01T22:18:38.872776",
+  "num_iterations": 5,
+  "emulator_host": "localhost:8085",
+  "single_agent_latencies": [
+    {
+      "total_latency": 0.1403486728668213,
+      "publish_latency": 0.014329671859741211,
+      "agent_processing_time": 5.7220458984375e-06,
+      "message_overhead": 0.14034295082092285,
+      "complete": true,
+      "timeout": false
+    },
+    {
+      "total_latency": 0.08170557022094727,
+      "publish_latency": 0.013675451278686523,
+      "agent_processing_time": 5.7220458984375e-06,
+      "message_overhead": 0.08169984817504883,
+      "complete": true,
+      "timeout": false
+    },
+    {
+      "total_latency": 0.08452868461608887,
+      "publish_latency": 0.015321493148803711,
+      "agent_processing_time": 4.0531158447265625e-06,
+      "message_overhead": 0.08452463150024414,
+      "complete": true,
+      "timeout": false
+    },
+    {
+      "total_latency": 0.13602066040039062,
+      "publish_latency": 0.013247489929199219,
+      "agent_processing_time": 3.5762786865234375e-06,
+      "message_overhead": 0.1360170841217041,
+      "complete": true,
+      "timeout": false
+    },
+    {
+      "total_latency": 0.08059024810791016,
+      "publish_latency": 0.013123273849487305,
+      "agent_processing_time": 3.24249267578125e-05,
+      "message_overhead": 0.08055782318115234,
+      "complete": true,
+      "timeout": false
+    }
+  ],
+  "multi_agent_latencies": [
+    {
+      "total_latency": 0.15983033180236816,
+      "publish_latency": 0.040647268295288086,
+      "avg_agent_processing_time": 5.880991617838542e-06,
+      "max_agent_processing_time": 7.152557373046875e-06,
+      "message_overhead": 0.15982317924499512,
+      "responses_received": 3,
+      "complete": true,
+      "timeout": false
+    },
+    {
+      "total_latency": 0.11739301681518555,
+      "publish_latency": 0.04242706298828125,
+      "avg_agent_processing_time": 6.516774495442708e-06,
+      "max_agent_processing_time": 8.106231689453125e-06,
+      "message_overhead": 0.1173849105834961,
+      "responses_received": 3,
+      "complete": true,
+      "timeout": false
+    },
+    {
+      "total_latency": 0.11742258071899414,
+      "publish_latency": 0.04146766662597656,
+      "avg_agent_processing_time": 3.8941701253255206e-06,
+      "max_agent_processing_time": 4.76837158203125e-06,
+      "message_overhead": 0.11741781234741211,
+      "responses_received": 3,
+      "complete": true,
+      "timeout": false
+    },
+    {
+      "total_latency": 0.11137080192565918,
+      "publish_latency": 0.04046177864074707,
+      "avg_agent_processing_time": 4.2120615641276044e-06,
+      "max_agent_processing_time": 4.76837158203125e-06,
+      "message_overhead": 0.11136603355407715,
+      "responses_received": 3,
+      "complete": true,
+      "timeout": false
+    },
+    {
+      "total_latency": 0.15773868560791016,
+      "publish_latency": 0.03866434097290039,
+      "avg_agent_processing_time": 4.450480143229167e-06,
+      "max_agent_processing_time": 5.9604644775390625e-06,
+      "message_overhead": 0.15773272514343262,
+      "responses_received": 3,
+      "complete": true,
+      "timeout": false
+    }
+  ],
+  "processing_times": [],
+  "message_overhead": [],
+  "single_agent_summary": {
+    "mean_latency": 0.10463876724243164,
+    "median_latency": 0.08452868461608887,
+    "stdev_latency": 0.030694864388478602,
+    "min_latency": 0.08059024810791016,
+    "max_latency": 0.1403486728668213,
+    "mean_processing_time": 1.02996826171875e-05,
+    "mean_message_overhead": 0.10462846755981445,
+    "success_rate": 1.0
+  },
+  "multi_agent_summary": {
+    "mean_latency": 0.13275108337402344,
+    "median_latency": 0.11742258071899414,
+    "stdev_latency": 0.02390405612926996,
+    "min_latency": 0.11137080192565918,
+    "max_latency": 0.15983033180236816,
+    "mean_avg_processing_time": 4.990895589192708e-06,
+    "mean_max_processing_time": 6.151199340820313e-06,
+    "mean_message_overhead": 0.1327449321746826,
+    "success_rate": 1.0
+  }
+}

@@ -77,7 +77,17 @@ echo "Exported PUBSUB_EMULATOR_HOST=${EMULATOR_HOST}"
 
 # Create topics using Python (more reliable than gcloud with emulator)
 echo "Creating topics and subscriptions..."
-python3 << 'EOF'
+
+# Try to use venv python if available, otherwise use system python3
+if [ -f "../transplant-gcp/venv/bin/python" ]; then
+    PYTHON_CMD="../transplant-gcp/venv/bin/python"
+elif [ -f "venv/bin/python" ]; then
+    PYTHON_CMD="venv/bin/python"
+else
+    PYTHON_CMD="python3"
+fi
+
+$PYTHON_CMD << 'EOF'
 import os
 from google.cloud import pubsub_v1
 
