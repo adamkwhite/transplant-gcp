@@ -134,20 +134,20 @@
     - [ ] 3.3.2 Create `aggregate_agent_results(results_dict)` function to combine successful responses
     - [ ] 3.3.3 Add error flags to response: `{"success": bool, "agents": {...}, "partial": bool}`
 
-- [ ] 4.0 Create Backward-Compatible REST API Integration
-  - [ ] 4.1 Create `services/coordinator/main.py` Flask app as coordinator service entry point
-    - [ ] 4.1.1 Import coordinator agent from `services/agents/coordinator.py`
-    - [ ] 4.1.2 Implement `POST /medications/missed-dose` endpoint (backward compatible)
-    - [ ] 4.1.3 Create `transform_to_legacy_format(adk_response)` to convert ADK Event response to existing JSON structure
-    - [ ] 4.1.4 Implement health check endpoint: `GET /health` returning agent status
-  - [ ] 4.2 Add new direct agent endpoints (optional)
-    - [ ] 4.2.1 Implement `POST /agents/medication-advisor` for direct MedicationAdvisor access
-    - [ ] 4.2.2 Implement `POST /agents/symptom-monitor` for direct SymptomMonitor access
-    - [ ] 4.2.3 Implement `POST /agents/drug-interaction` for direct DrugInteractionChecker access
-  - [ ] 4.3 Update `services/missed-dose/main.py` to route legacy endpoints to coordinator
-    - [ ] 4.3.1 Add HTTP client to call coordinator service
-    - [ ] 4.3.2 Forward `/medications/missed-dose` requests to coordinator
-    - [ ] 4.3.3 Maintain exact response format for backward compatibility
+- [ ] 4.0 Integrate ADK Agents into Existing REST API
+  - [ ] 4.1 Update `services/missed-dose/main.py` to use ADK coordinator agent
+    - [ ] 4.1.1 Import TransplantCoordinator from `services/agents/coordinator_agent.py`
+    - [ ] 4.1.2 Initialize coordinator agent with GEMINI_API_KEY on app startup
+    - [ ] 4.1.3 Replace `gemini.analyze_missed_dose()` call with `coordinator.route_request()`
+    - [ ] 4.1.4 Transform user request into coordinator-compatible format
+    - [ ] 4.1.5 Extract relevant fields from ADK response to maintain existing JSON structure
+  - [ ] 4.2 Update health check endpoint
+    - [ ] 4.2.1 Add agent status to `/health` response (coordinator + 3 specialists)
+    - [ ] 4.2.2 Show ADK version and agent model information
+  - [ ] 4.3 Test backward compatibility
+    - [ ] 4.3.1 Verify existing `/medications/missed-dose` request/response format unchanged
+    - [ ] 4.3.2 Test with sample requests from original API documentation
+    - [ ] 4.3.3 Verify Firestore integration still works (patient context, history recording)
 
 - [ ] 5.0 Deploy Agents to Google Cloud Run
   - [ ] 5.1 Create Dockerfiles for each agent service
