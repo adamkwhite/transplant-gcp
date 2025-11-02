@@ -39,8 +39,9 @@ jobs:
 
       - name: Setup Pub/Sub Emulator
         run: |
-          # gcloud is pre-installed on GitHub Actions runners
-          gcloud components install pubsub-emulator --quiet
+          # Install Pub/Sub emulator via apt (GitHub Actions gcloud is apt-managed)
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq google-cloud-cli-pubsub-emulator
 
           # Start emulator in background
           gcloud beta emulators pubsub start --host-port=localhost:8085 &
