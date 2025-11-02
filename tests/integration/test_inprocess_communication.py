@@ -8,6 +8,7 @@ Requires GEMINI_API_KEY environment variable for real API calls.
 """
 
 import os
+import time
 
 import pytest
 
@@ -15,6 +16,14 @@ from services.agents.coordinator_agent import TransplantCoordinatorAgent
 from services.agents.drug_interaction_agent import DrugInteractionCheckerAgent
 from services.agents.medication_advisor_agent import MedicationAdvisorAgent
 from services.agents.symptom_monitor_agent import SymptomMonitorAgent
+
+
+@pytest.fixture(autouse=True)
+def rate_limit_delay():
+    """Add delay between tests to avoid API rate limits."""
+    yield
+    # Add 2-second delay after each test to respect API rate limits
+    time.sleep(2)
 
 
 @pytest.fixture
