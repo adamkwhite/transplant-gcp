@@ -29,6 +29,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
+          pip install pytest>=7.4.0 pytest-cov>=4.1.0
           if [ -f requirements.txt ]; then
             pip install --use-deprecated=legacy-resolver -r requirements.txt
           fi
@@ -36,7 +37,25 @@ jobs:
             pip install -r requirements-dev.txt
           fi
 
+      - name: Setup Pub/Sub Emulator
+        run: |
+          # Start Pub/Sub emulator using official Docker image
+          docker run -d --name pubsub-emulator -p 8085:8085 \
+            gcr.io/google.com/cloudsdktool/google-cloud-cli:emulators \
+            gcloud beta emulators pubsub start --host-port=0.0.0.0:8085
+
+          # Wait for emulator to be ready
+          echo "Waiting for Pub/Sub emulator to start..."
+          sleep 5
+
+          # Create topics and subscriptions (set emulator host)
+          export PUBSUB_EMULATOR_HOST=localhost:8085
+          python scripts/create_pubsub_topics.py || echo "Topics creation script not found or failed"
+
       - name: Run tests with coverage
+        env:
+          PUBSUB_EMULATOR_HOST: localhost:8085
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: |
           # Check if tests exist before running
           if find tests/ -name "test_*.py" -type f 2>/dev/null | grep -q .; then
