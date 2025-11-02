@@ -8,8 +8,8 @@
 # The --no-deps workaround is NOT needed - pip will handle conflicts.
 
 # Google Agent Development Kit (ADK)
-# Pinned to 1.16.0 - version 1.17.0 introduced breaking API changes to agent.run()
-google-adk==1.16.0
+# Using 1.17.0 - supports async generator pattern for agent.run_async()
+google-adk==1.17.0
 
 # Google Cloud Services
 google-cloud-firestore==2.13.0

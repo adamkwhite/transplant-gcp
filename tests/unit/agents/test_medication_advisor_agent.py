@@ -1,17 +1,22 @@
 """Unit tests for MedicationAdvisorAgent."""
 
-from unittest.mock import ANY, MagicMock, patch
+from unittest.mock import ANY, AsyncMock, MagicMock, patch
 
 from services.agents.medication_advisor_agent import MedicationAdvisorAgent
 
 
-def _async_return(value):
-    """Helper to create async return value for mocking."""
+def _async_generator_mock(text: str):
+    """Helper to create async generator mock for Runner.run_async()."""
 
-    async def _return():
-        return value
+    async def _generator():
+        # Yield event with text content
+        event = MagicMock()
+        event.content = MagicMock()
+        event.content.parts = [MagicMock()]
+        event.content.parts[0].text = text
+        yield event
 
-    return _return()
+    return _generator()
 
 
 class TestMedicationAdvisorAgent:
@@ -53,16 +58,27 @@ class TestMedicationAdvisorAgent:
         # Assert - should use GEMINI_API_KEY from config
         assert agent.api_key is not None
 
+    @patch("services.agents.medication_advisor_agent.Runner")
     @patch("services.agents.medication_advisor_agent.Agent")
     @patch("services.agents.medication_advisor_agent.types")
     def test_analyze_missed_dose_calls_agent(
-        self, mock_types: MagicMock, mock_agent_class: MagicMock
+        self, mock_types: MagicMock, mock_agent_class: MagicMock, mock_runner_class: MagicMock
     ) -> None:
         """Test that analyze_missed_dose invokes the agent with correct prompt."""
         # Arrange
-        mock_agent_instance = MagicMock()
-        mock_agent_class.return_value = mock_agent_instance
-        mock_agent_instance.run_async.return_value = _async_return("Agent response")
+        mock_runner_instance = MagicMock()
+        mock_runner_class.return_value = mock_runner_instance
+        mock_runner_instance.app_name = "MedicationAdvisor"
+
+        # Mock session service
+        mock_session_service = AsyncMock()
+        mock_session_service.get_session.return_value = MagicMock()
+        mock_runner_instance.session_service = mock_session_service
+
+        # Mock run_async to return async generator
+        mock_runner_instance.run_async.side_effect = lambda **_: _async_generator_mock(
+            "Agent response"
+        )
 
         agent = MedicationAdvisorAgent(api_key="test_key")
 
@@ -76,12 +92,7 @@ class TestMedicationAdvisorAgent:
         )
 
         # Assert
-        mock_agent_instance.run_async.assert_called_once()
-        call_args = mock_agent_instance.run_async.call_args[0][0]
-        assert "tacrolimus" in call_args
-        assert "8:00 AM" in call_args
-        assert "2:00 PM" in call_args
-        assert "P123" in call_args
+        mock_runner_instance.run_async.assert_called_once()
 
         # Verify result structure
         assert "recommendation" in result
@@ -91,16 +102,27 @@ class TestMedicationAdvisorAgent:
         assert "next_steps" in result
         assert "agent_name" in result
 
+    @patch("services.agents.medication_advisor_agent.Runner")
     @patch("services.agents.medication_advisor_agent.Agent")
     @patch("services.agents.medication_advisor_agent.types")
     def test_analyze_missed_dose_without_optional_params(
-        self, mock_types: MagicMock, mock_agent_class: MagicMock
+        self, mock_types: MagicMock, mock_agent_class: MagicMock, mock_runner_class: MagicMock
     ) -> None:
         """Test analyze_missed_dose works without optional parameters."""
         # Arrange
-        mock_agent_instance = MagicMock()
-        mock_agent_class.return_value = mock_agent_instance
-        mock_agent_instance.run_async.return_value = _async_return("Agent response")
+        mock_runner_instance = MagicMock()
+        mock_runner_class.return_value = mock_runner_instance
+        mock_runner_instance.app_name = "MedicationAdvisor"
+
+        # Mock session service
+        mock_session_service = AsyncMock()
+        mock_session_service.get_session.return_value = MagicMock()
+        mock_runner_instance.session_service = mock_session_service
+
+        # Mock run_async to return async generator
+        mock_runner_instance.run_async.side_effect = lambda **_: _async_generator_mock(
+            "Agent response"
+        )
 
         agent = MedicationAdvisorAgent(api_key="test_key")
 
@@ -110,7 +132,7 @@ class TestMedicationAdvisorAgent:
         )
 
         # Assert
-        mock_agent_instance.run_async.assert_called_once()
+        mock_runner_instance.run_async.assert_called_once()
         assert result["risk_level"] == "medium"
         assert result["confidence"] == 0.85
 

@@ -9,6 +9,10 @@ import asyncio
 from typing import Any
 
 from google.adk.agents import Agent  # type: ignore[import-untyped]
+from google.adk.runners import Runner  # type: ignore[import-untyped]
+from google.adk.sessions.in_memory_session_service import (
+    InMemorySessionService,  # type: ignore[import-untyped]
+)
 from google.genai import types  # type: ignore[import-untyped]
 
 from services.config.adk_config import (
@@ -54,6 +58,13 @@ class MedicationAdvisorAgent:
             generate_content_config=generate_config,
         )
 
+        # Create Runner with in-memory session service
+        self.runner = Runner(
+            app_name="MedicationAdvisor",
+            agent=self.agent,
+            session_service=InMemorySessionService(),
+        )
+
     def analyze_missed_dose(
         self,
         medication: str,
@@ -89,8 +100,36 @@ class MedicationAdvisorAgent:
             patient_context=patient_context,
         )
 
-        # Invoke agent (ADK handles session management)
-        response = asyncio.run(self.agent.run_async(prompt))  # type: ignore[attr-defined, arg-type, var-annotated]
+        # Invoke agent using Runner with proper session context
+        async def _run_agent():
+            response_text = ""
+            user_message = types.Content(role="user", parts=[types.Part(text=prompt)])
+
+            # Create session if it doesn't exist
+            session = await self.runner.session_service.get_session(  # type: ignore[attr-defined]
+                app_name=self.runner.app_name,  # type: ignore[attr-defined]
+                user_id="system",
+                session_id="medication_analysis",
+            )
+            if not session:
+                await self.runner.session_service.create_session(  # type: ignore[attr-defined]
+                    app_name=self.runner.app_name,  # type: ignore[attr-defined]
+                    user_id="system",
+                    session_id="medication_analysis",
+                )
+
+            async for event in self.runner.run_async(  # type: ignore[attr-defined]
+                user_id="system",
+                session_id="medication_analysis",
+                new_message=user_message,
+            ):
+                if hasattr(event, "content") and event.content and event.content.parts:
+                    for part in event.content.parts:
+                        if part.text:
+                            response_text += part.text
+            return response_text
+
+        response = asyncio.run(_run_agent())
 
         # Parse agent response
         return self._parse_agent_response(response)

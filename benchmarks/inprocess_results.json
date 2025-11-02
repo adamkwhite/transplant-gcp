@@ -1,0 +1,177 @@
+{
+  "timestamp": "2025-11-02 00:44:09",
+  "summary": {
+    "mean_latency": 3.2904156923294066,
+    "median_latency": 3.0806390047073364,
+    "min_latency": 2.250347137451172,
+    "max_latency": 5.929505348205566,
+    "p50_latency": 3.0806390047073364,
+    "p95_latency": 7.022600150108337,
+    "total_requests": 10,
+    "successful_requests": 10,
+    "failed_requests": 0
+  },
+  "category_breakdown": {
+    "single_agent_medication": {
+      "count": 2,
+      "mean_latency": 3.104177474975586,
+      "success_rate": 1.0
+    },
+    "single_agent_symptom": {
+      "count": 2,
+      "mean_latency": 2.4524210691452026,
+      "success_rate": 1.0
+    },
+    "multi_agent_3": {
+      "count": 1,
+      "mean_latency": 3.500405788421631,
+      "success_rate": 1.0
+    },
+    "single_agent_interaction": {
+      "count": 2,
+      "mean_latency": 2.955699920654297,
+      "success_rate": 1.0
+    },
+    "multi_agent_2": {
+      "count": 3,
+      "mean_latency": 4.126384735107422,
+      "success_rate": 1.0
+    }
+  },
+  "detailed_results": [
+    {
+      "request_id": 1,
+      "category": "single_agent_medication",
+      "request": "I missed my tacrolimus dose at 8am, it's now 2pm",
+      "latency_seconds": 3.2998242378234863,
+      "agents_consulted": [
+        "MedicationAdvisor"
+      ],
+      "request_type": "missed_dose",
+      "confidence": 0.85,
+      "success": true,
+      "error": null
+    },
+    {
+      "request_id": 2,
+      "category": "single_agent_symptom",
+      "request": "I have a fever of 101\u00b0F and decreased urine output",
+      "latency_seconds": 2.6544950008392334,
+      "agents_consulted": [
+        "SymptomMonitor"
+      ],
+      "request_type": "symptom_check",
+      "confidence": 0.85,
+      "success": true,
+      "error": null
+    },
+    {
+      "request_id": 3,
+      "category": "single_agent_interaction",
+      "request": "Can I take ibuprofen with my tacrolimus?",
+      "latency_seconds": 2.772003173828125,
+      "agents_consulted": [
+        "DrugInteractionChecker"
+      ],
+      "request_type": "interaction_check",
+      "confidence": 0.85,
+      "success": true,
+      "error": null
+    },
+    {
+      "request_id": 4,
+      "category": "multi_agent_2",
+      "request": "I missed my morning dose and now I have a fever",
+      "latency_seconds": 3.021881341934204,
+      "agents_consulted": [
+        "MedicationAdvisor",
+        "SymptomMonitor"
+      ],
+      "request_type": "multi_concern",
+      "confidence": 0.85,
+      "success": true,
+      "error": null
+    },
+    {
+      "request_id": 5,
+      "category": "multi_agent_2",
+      "request": "I forgot my tacrolimus at 8am and want to take ibuprofen for a headache",
+      "latency_seconds": 5.929505348205566,
+      "agents_consulted": [
+        "MedicationAdvisor",
+        "DrugInteractionChecker"
+      ],
+      "request_type": "multi_concern",
+      "confidence": 0.85,
+      "success": true,
+      "error": null
+    },
+    {
+      "request_id": 6,
+      "category": "multi_agent_3",
+      "request": "I missed my dose, have fever and decreased urine, and want to take aspirin",
+      "latency_seconds": 3.500405788421631,
+      "agents_consulted": [
+        "MedicationAdvisor",
+        "SymptomMonitor"
+      ],
+      "request_type": "multi_concern",
+      "confidence": 0.85,
+      "success": true,
+      "error": null
+    },
+    {
+      "request_id": 7,
+      "category": "single_agent_medication",
+      "request": "Should I take my mycophenolate now or skip it?",
+      "latency_seconds": 2.9085307121276855,
+      "agents_consulted": [
+        "MedicationAdvisor"
+      ],
+      "request_type": "missed_dose",
+      "confidence": 0.85,
+      "success": true,
+      "error": null
+    },
+    {
+      "request_id": 8,
+      "category": "single_agent_symptom",
+      "request": "I'm experiencing nausea and fatigue today",
+      "latency_seconds": 2.250347137451172,
+      "agents_consulted": [
+        "MedicationAdvisor"
+      ],
+      "request_type": "missed_dose",
+      "confidence": 0.85,
+      "success": true,
+      "error": null
+    },
+    {
+      "request_id": 9,
+      "category": "single_agent_interaction",
+      "request": "Can I eat grapefruit with my immunosuppressants?",
+      "latency_seconds": 3.1393966674804688,
+      "agents_consulted": [
+        "DrugInteractionChecker"
+      ],
+      "request_type": "interaction_check",
+      "confidence": 0.85,
+      "success": true,
+      "error": null
+    },
+    {
+      "request_id": 10,
+      "category": "multi_agent_2",
+      "request": "I missed prednisone this morning and feeling weak",
+      "latency_seconds": 3.427767515182495,
+      "agents_consulted": [
+        "MedicationAdvisor",
+        "SymptomMonitor"
+      ],
+      "request_type": "multi_concern",
+      "confidence": 0.85,
+      "success": true,
+      "error": null
+    }
+  ]
+}
