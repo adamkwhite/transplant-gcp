@@ -90,8 +90,18 @@ ALWAYS respond with valid JSON only, no extra text.
 
         try:
             # Use run_async() which works with both ADK 1.16.0 and 1.17.0
-            response = asyncio.run(self.agent.run_async(prompt))  # type: ignore[attr-defined]
-            response_text = str(response)
+            # run_async() returns an async generator, so we need to collect events
+            async def _run_agent():
+                response_text = ""
+                async for event in self.agent.run_async(prompt):  # type: ignore[attr-defined]
+                    # Collect text from events
+                    if hasattr(event, "content") and event.content and event.content.parts:
+                        for part in event.content.parts:
+                            if part.text:
+                                response_text += part.text
+                return response_text
+
+            response_text = asyncio.run(_run_agent())
 
             # Extract JSON from response
             extracted = self._parse_json_response(response_text)
