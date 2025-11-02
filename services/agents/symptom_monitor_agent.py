@@ -5,6 +5,7 @@ Specialized ADK agent for detecting transplant rejection symptoms and
 assessing urgency for kidney transplant patients.
 """
 
+import asyncio
 from typing import Any
 
 from google.adk.agents import Agent  # type: ignore[import-untyped]
@@ -87,7 +88,7 @@ class SymptomMonitorAgent:
         )
 
         # Invoke agent (ADK handles session management)
-        response = self.agent.run(prompt)  # type: ignore[attr-defined]
+        response = asyncio.run(self.agent.run_async(prompt))  # type: ignore[attr-defined]
 
         # Parse agent response
         return self._parse_agent_response(response)
