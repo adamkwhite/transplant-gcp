@@ -5,6 +5,7 @@ Primary orchestration agent that routes patient requests to appropriate
 specialist agents and synthesizes their responses.
 """
 
+import asyncio
 from typing import Any
 
 from google.adk.agents import Agent  # type: ignore[import-untyped]
@@ -133,7 +134,7 @@ Respond with JSON: {{
     "request_type": "missed_dose|symptom_check|interaction_check|multi_concern"
 }}"""
 
-        response = self.agent.run(prompt)  # type: ignore[attr-defined]
+        response = asyncio.run(self.agent.run_async(prompt))  # type: ignore[attr-defined, arg-type, var-annotated]
 
         # Parse routing decision (simplified for now)
         # In real implementation, parse JSON from response
@@ -275,7 +276,7 @@ Respond with JSON: {{
         )
 
         synthesis_prompt = "\n".join(prompt_parts)
-        coordinator_response = self.agent.run(synthesis_prompt)  # type: ignore[attr-defined]
+        coordinator_response = asyncio.run(self.agent.run_async(synthesis_prompt))  # type: ignore[attr-defined, arg-type, var-annotated]
 
         return {
             "agents_consulted": list(specialist_responses.keys()),
