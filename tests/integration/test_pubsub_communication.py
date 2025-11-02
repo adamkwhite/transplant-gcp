@@ -25,7 +25,7 @@ def ensure_emulator() -> None:
 
 
 @pytest.fixture(scope="module")
-def subscriber_thread(_ensure_emulator: None = None) -> Any:
+def subscriber_thread(ensure_emulator: None) -> Any:  # noqa: ARG001
     """Start specialist subscribers in background thread."""
     subscribers = SpecialistSubscribers()
 
