@@ -134,6 +134,7 @@ omit = [
     "*/.venv/*",
     "services/agents/test_agent.py",  # Legacy test file, not used in production
     "services/gemini_client.py",  # Legacy client, replaced by ADK agents
+    "services/agents/parameter_extractor.py",  # Not used, replaced by inline extraction
 ]
 
 [tool.coverage.report]
