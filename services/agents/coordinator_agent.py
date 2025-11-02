@@ -11,6 +11,7 @@ import re
 from typing import Any
 
 from google.adk.agents import Agent  # type: ignore[import-untyped]
+from google.adk.runners import Runner  # type: ignore[import-untyped]
 from google.genai import types  # type: ignore[import-untyped]
 
 from services.agents.parameter_extractor import ParameterExtractor
@@ -163,8 +164,20 @@ Respond with ONLY valid JSON (no markdown, no extra text):
 }}"""
 
         try:
-            response = self.agent.run(prompt)  # type: ignore[attr-defined]
-            response_text = str(response)
+            # Create a runner to execute the agent
+            runner = Runner(
+                agent=self.agent,
+                app_name="transplant_medication_adherence",
+            )
+
+            # Run the agent and collect response
+            response_text = ""
+            for event in runner.run(new_message=prompt):
+                # Collect text from events
+                if event.content and event.content.parts:
+                    for part in event.content.parts:
+                        if part.text:
+                            response_text += part.text
 
             # Parse JSON from response
             routing_decision = self._parse_json_response(response_text)
@@ -609,8 +622,20 @@ Respond with ONLY valid JSON (no markdown, no extra text):
         synthesis_prompt = "\n".join(prompt_parts)
 
         try:
-            coordinator_response = self.agent.run(synthesis_prompt)  # type: ignore[attr-defined]
-            synthesis_text = str(coordinator_response)
+            # Create a runner to execute the synthesis
+            runner = Runner(
+                agent=self.agent,
+                app_name="transplant_medication_adherence",
+            )
+
+            # Run the synthesis and collect response
+            synthesis_text = ""
+            for event in runner.run(new_message=synthesis_prompt):
+                # Collect text from events
+                if event.content and event.content.parts:
+                    for part in event.content.parts:
+                        if part.text:
+                            synthesis_text += part.text
         except Exception:
             # Fallback synthesis on error
             synthesis_text = self._fallback_synthesis(
