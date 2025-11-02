@@ -12,6 +12,7 @@ from typing import Any
 
 from google.adk.agents import Agent  # type: ignore[import-untyped]
 from google.adk.runners import Runner  # type: ignore[import-untyped]
+from google.adk.sessions import InMemorySessionService  # type: ignore[import-untyped]
 from google.genai import types  # type: ignore[import-untyped]
 
 from services.agents.parameter_extractor import ParameterExtractor
@@ -168,6 +169,7 @@ Respond with ONLY valid JSON (no markdown, no extra text):
             runner = Runner(
                 agent=self.agent,
                 app_name="transplant_medication_adherence",
+                session_service=InMemorySessionService(),
             )
 
             # Run the agent and collect response
@@ -626,6 +628,7 @@ Respond with ONLY valid JSON (no markdown, no extra text):
             runner = Runner(
                 agent=self.agent,
                 app_name="transplant_medication_adherence",
+                session_service=InMemorySessionService(),
             )
 
             # Run the synthesis and collect response
