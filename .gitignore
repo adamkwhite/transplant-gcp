@@ -248,3 +248,4 @@ service-account*.json
 
 # SonarCloud analysis reports
 sonar-report.json
+transplant-gcp-adk-venv/

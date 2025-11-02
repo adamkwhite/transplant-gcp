@@ -1,1 +1,1 @@
-"""Integration tests for Pub/Sub communication."""
+"""Integration tests for multi-agent architectures (ADK orchestration and Pub/Sub communication)."""
