@@ -73,7 +73,8 @@ class TestTransplantCoordinatorAgent:
         # Arrange
         mock_agent_instance = MagicMock()
         mock_agent_class.return_value = mock_agent_instance
-        mock_agent_instance.run_async.return_value = _async_return("Routing analysis")
+        # Use side_effect to create new coroutine on each call
+        mock_agent_instance.run_async.side_effect = lambda _: _async_return("Routing analysis")
 
         agent = TransplantCoordinatorAgent(api_key="test_key")
 
@@ -96,7 +97,8 @@ class TestTransplantCoordinatorAgent:
         # Arrange
         mock_agent_instance = MagicMock()
         mock_agent_class.return_value = mock_agent_instance
-        mock_agent_instance.run_async.return_value = _async_return("Routing complete")
+        # Use side_effect to create new coroutine on each call
+        mock_agent_instance.run_async.side_effect = lambda _: _async_return("Routing complete")
 
         agent = TransplantCoordinatorAgent(api_key="test_key")
 
