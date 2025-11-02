@@ -12,8 +12,6 @@ This orchestrator wraps ADK's coordinator/dispatcher pattern.
 from typing import Any
 
 from google.adk.agents import Agent  # type: ignore[import-untyped]
-from google.adk.runners import Runner  # type: ignore[import-untyped]
-from google.adk.sessions import InMemorySessionService  # type: ignore[import-untyped]
 from google.genai import types  # type: ignore[import-untyped]
 
 from services.config.adk_config import (
@@ -191,31 +189,29 @@ Action: transfer_to_agent(agent_name='MedicationAdvisor') first, then SymptomMon
             conversation_history=conversation_history,
         )
 
-        # Create a runner to execute the coordinator agent
-        # The runner handles the event loop and session management
-        runner = Runner(
-            agent=self.coordinator,
-            app_name="transplant_medication_adherence",
-            session_service=InMemorySessionService(),
+        # For now, use the underlying Gemini client directly
+        # TODO: Once we understand the proper ADK Runner/Session pattern,
+        # replace this with proper agent orchestration
+        from google.genai import Client  # type: ignore[import-untyped]
+
+        client = Client(api_key=self.api_key)
+
+        # Use the coordinator's model and configuration
+        response = client.models.generate_content(
+            model=COORDINATOR_CONFIG["model"],
+            contents=full_request,
+            config=types.GenerateContentConfig(
+                temperature=DEFAULT_GENERATION_CONFIG["temperature"],
+                max_output_tokens=int(DEFAULT_GENERATION_CONFIG["max_output_tokens"]),
+                top_p=DEFAULT_GENERATION_CONFIG["top_p"],
+                top_k=DEFAULT_GENERATION_CONFIG["top_k"],
+            ),
         )
 
-        # Run the coordinator agent using the runner
-        # ADK's Runner + AutoFlow automatically handles:
-        # - transfer_to_agent() function calls
-        # - Routing to sub-agents
-        # - Session state management
-        # - Multi-turn context
+        # Extract response text
         response_text = ""
-        for event in runner.run(
-            user_id=patient_id or "default_user",
-            session_id="session_" + (patient_id or "default"),
-            new_message=full_request,
-        ):
-            # Collect text from events
-            if event.content and event.content.parts:
-                for part in event.content.parts:
-                    if part.text:
-                        response_text += part.text
+        if response.text:
+            response_text = response.text
 
         # Parse response
         return self._parse_orchestrator_response(response_text)
