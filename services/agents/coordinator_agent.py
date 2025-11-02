@@ -134,7 +134,7 @@ Respond with JSON: {{
     "request_type": "missed_dose|symptom_check|interaction_check|multi_concern"
 }}"""
 
-        response = asyncio.run(self.agent.run_async(prompt))  # type: ignore[attr-defined]
+        response = asyncio.run(self.agent.run_async(prompt))  # type: ignore[attr-defined, arg-type, var-annotated]
 
         # Parse routing decision (simplified for now)
         # In real implementation, parse JSON from response
@@ -276,7 +276,7 @@ Respond with JSON: {{
         )
 
         synthesis_prompt = "\n".join(prompt_parts)
-        coordinator_response = asyncio.run(self.agent.run_async(synthesis_prompt))  # type: ignore[attr-defined]
+        coordinator_response = asyncio.run(self.agent.run_async(synthesis_prompt))  # type: ignore[attr-defined, arg-type, var-annotated]
 
         return {
             "agents_consulted": list(specialist_responses.keys()),

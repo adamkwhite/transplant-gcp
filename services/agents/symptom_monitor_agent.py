@@ -88,7 +88,7 @@ class SymptomMonitorAgent:
         )
 
         # Invoke agent (ADK handles session management)
-        response = asyncio.run(self.agent.run_async(prompt))  # type: ignore[attr-defined]
+        response = asyncio.run(self.agent.run_async(prompt))  # type: ignore[attr-defined, arg-type, var-annotated]
 
         # Parse agent response
         return self._parse_agent_response(response)
