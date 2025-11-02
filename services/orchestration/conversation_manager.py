@@ -210,6 +210,7 @@ class ConversationManager:
             "nope",
             # Follow-up phrases
             "what about",
+            "what if",
             "and also",
             "also",
             "plus",
@@ -217,10 +218,18 @@ class ConversationManager:
         ]
 
         input_lower = user_input.lower()
+        word_count = len(user_input.split())
 
-        # Check if input is short and contains follow-up indicators
-        if len(user_input.split()) <= 5:
+        # Short inputs (<=5 words) with follow-up indicators
+        if word_count <= 5:
             for indicator in follow_up_indicators:
+                if indicator in input_lower:
+                    return True
+
+        # Medium-length inputs (<=10 words) with strong follow-up phrases
+        if word_count <= 10:
+            strong_indicators = ["what about", "what if", "and also", "in addition"]
+            for indicator in strong_indicators:
                 if indicator in input_lower:
                     return True
 
