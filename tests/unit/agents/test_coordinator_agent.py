@@ -1,17 +1,22 @@
 """Unit tests for TransplantCoordinatorAgent."""
 
-from unittest.mock import ANY, MagicMock, patch
+from unittest.mock import ANY, AsyncMock, MagicMock, patch
 
 from services.agents.coordinator_agent import TransplantCoordinatorAgent
 
 
-def _async_return(value):
-    """Helper to create async return value for mocking."""
+def _async_generator_mock(text: str):
+    """Helper to create async generator mock for Runner.run_async()."""
 
-    async def _return():
-        return value
+    async def _generator():
+        # Yield event with text content
+        event = MagicMock()
+        event.content = MagicMock()
+        event.content.parts = [MagicMock()]
+        event.content.parts[0].text = text
+        yield event
 
-    return _return()
+    return _generator()
 
 
 class TestTransplantCoordinatorAgent:
@@ -64,17 +69,27 @@ class TestTransplantCoordinatorAgent:
         assert agent.symptom_monitor == mock_symptom_monitor
         assert agent.drug_interaction_checker == mock_drug_checker
 
+    @patch("services.agents.coordinator_agent.Runner")
     @patch("services.agents.coordinator_agent.Agent")
     @patch("services.agents.coordinator_agent.types")
     def test_route_request_calls_agent(
-        self, mock_types: MagicMock, mock_agent_class: MagicMock
+        self, mock_types: MagicMock, mock_agent_class: MagicMock, mock_runner_class: MagicMock
     ) -> None:
         """Test that route_request invokes the coordinator agent."""
         # Arrange
-        mock_agent_instance = MagicMock()
-        mock_agent_class.return_value = mock_agent_instance
-        # Use side_effect to create new coroutine on each call
-        mock_agent_instance.run_async.side_effect = lambda _: _async_return("Routing analysis")
+        mock_runner_instance = MagicMock()
+        mock_runner_class.return_value = mock_runner_instance
+        mock_runner_instance.app_name = "TransplantCoordinator"
+
+        # Mock session service
+        mock_session_service = AsyncMock()
+        mock_session_service.get_session.return_value = MagicMock()
+        mock_runner_instance.session_service = mock_session_service
+
+        # Mock run_async to return async generator
+        mock_runner_instance.run_async.side_effect = lambda **_: _async_generator_mock(
+            "Routing analysis"
+        )
 
         agent = TransplantCoordinatorAgent(api_key="test_key")
 
@@ -85,20 +100,30 @@ class TestTransplantCoordinatorAgent:
         )
 
         # Assert
-        # Should call agent.run_async at least once for routing analysis
-        assert mock_agent_instance.run_async.call_count >= 1
+        # Should call runner.run_async at least once for routing analysis
+        assert mock_runner_instance.run_async.call_count >= 1
 
+    @patch("services.agents.coordinator_agent.Runner")
     @patch("services.agents.coordinator_agent.Agent")
     @patch("services.agents.coordinator_agent.types")
     def test_route_request_returns_structured_response(
-        self, mock_types: MagicMock, mock_agent_class: MagicMock
+        self, mock_types: MagicMock, mock_agent_class: MagicMock, mock_runner_class: MagicMock
     ) -> None:
         """Test that route_request returns expected structure."""
         # Arrange
-        mock_agent_instance = MagicMock()
-        mock_agent_class.return_value = mock_agent_instance
-        # Use side_effect to create new coroutine on each call
-        mock_agent_instance.run_async.side_effect = lambda _: _async_return("Routing complete")
+        mock_runner_instance = MagicMock()
+        mock_runner_class.return_value = mock_runner_instance
+        mock_runner_instance.app_name = "TransplantCoordinator"
+
+        # Mock session service
+        mock_session_service = AsyncMock()
+        mock_session_service.get_session.return_value = MagicMock()
+        mock_runner_instance.session_service = mock_session_service
+
+        # Mock run_async to return async generator
+        mock_runner_instance.run_async.side_effect = lambda **_: _async_generator_mock(
+            "Routing complete"
+        )
 
         agent = TransplantCoordinatorAgent(api_key="test_key")
 
@@ -116,16 +141,25 @@ class TestTransplantCoordinatorAgent:
         assert "confidence" in result
         assert 0.0 <= result["confidence"] <= 1.0
 
+    @patch("services.agents.coordinator_agent.Runner")
     @patch("services.agents.coordinator_agent.Agent")
     @patch("services.agents.coordinator_agent.types")
     def test_analyze_routing_identifies_medication_advisor(
-        self, mock_types: MagicMock, mock_agent_class: MagicMock
+        self, mock_types: MagicMock, mock_agent_class: MagicMock, mock_runner_class: MagicMock
     ) -> None:
         """Test that routing correctly identifies medication-related requests."""
         # Arrange
-        mock_agent_instance = MagicMock()
-        mock_agent_class.return_value = mock_agent_instance
-        mock_agent_instance.run_async.return_value = _async_return("Routing")
+        mock_runner_instance = MagicMock()
+        mock_runner_class.return_value = mock_runner_instance
+        mock_runner_instance.app_name = "TransplantCoordinator"
+
+        # Mock session service
+        mock_session_service = AsyncMock()
+        mock_session_service.get_session.return_value = MagicMock()
+        mock_runner_instance.session_service = mock_session_service
+
+        # Mock run_async to return async generator
+        mock_runner_instance.run_async.side_effect = lambda **_: _async_generator_mock("Routing")
 
         agent = TransplantCoordinatorAgent(api_key="test_key")
 
@@ -137,16 +171,25 @@ class TestTransplantCoordinatorAgent:
         assert "MedicationAdvisor" in routing["agents_needed"]
         assert routing["request_type"] == "missed_dose"
 
+    @patch("services.agents.coordinator_agent.Runner")
     @patch("services.agents.coordinator_agent.Agent")
     @patch("services.agents.coordinator_agent.types")
     def test_analyze_routing_identifies_symptom_monitor(
-        self, mock_types: MagicMock, mock_agent_class: MagicMock
+        self, mock_types: MagicMock, mock_agent_class: MagicMock, mock_runner_class: MagicMock
     ) -> None:
         """Test that routing correctly identifies symptom-related requests."""
         # Arrange
-        mock_agent_instance = MagicMock()
-        mock_agent_class.return_value = mock_agent_instance
-        mock_agent_instance.run_async.return_value = _async_return("Routing")
+        mock_runner_instance = MagicMock()
+        mock_runner_class.return_value = mock_runner_instance
+        mock_runner_instance.app_name = "TransplantCoordinator"
+
+        # Mock session service
+        mock_session_service = AsyncMock()
+        mock_session_service.get_session.return_value = MagicMock()
+        mock_runner_instance.session_service = mock_session_service
+
+        # Mock run_async to return async generator
+        mock_runner_instance.run_async.side_effect = lambda **_: _async_generator_mock("Routing")
 
         agent = TransplantCoordinatorAgent(api_key="test_key")
 
@@ -157,16 +200,25 @@ class TestTransplantCoordinatorAgent:
         assert "agents_needed" in routing
         assert "SymptomMonitor" in routing["agents_needed"]
 
+    @patch("services.agents.coordinator_agent.Runner")
     @patch("services.agents.coordinator_agent.Agent")
     @patch("services.agents.coordinator_agent.types")
     def test_analyze_routing_identifies_drug_interaction_checker(
-        self, mock_types: MagicMock, mock_agent_class: MagicMock
+        self, mock_types: MagicMock, mock_agent_class: MagicMock, mock_runner_class: MagicMock
     ) -> None:
         """Test that routing correctly identifies interaction-related requests."""
         # Arrange
-        mock_agent_instance = MagicMock()
-        mock_agent_class.return_value = mock_agent_instance
-        mock_agent_instance.run_async.return_value = _async_return("Routing")
+        mock_runner_instance = MagicMock()
+        mock_runner_class.return_value = mock_runner_instance
+        mock_runner_instance.app_name = "TransplantCoordinator"
+
+        # Mock session service
+        mock_session_service = AsyncMock()
+        mock_session_service.get_session.return_value = MagicMock()
+        mock_runner_instance.session_service = mock_session_service
+
+        # Mock run_async to return async generator
+        mock_runner_instance.run_async.side_effect = lambda **_: _async_generator_mock("Routing")
 
         agent = TransplantCoordinatorAgent(api_key="test_key")
 
@@ -177,16 +229,25 @@ class TestTransplantCoordinatorAgent:
         assert "agents_needed" in routing
         assert "DrugInteractionChecker" in routing["agents_needed"]
 
+    @patch("services.agents.coordinator_agent.Runner")
     @patch("services.agents.coordinator_agent.Agent")
     @patch("services.agents.coordinator_agent.types")
     def test_analyze_routing_identifies_multi_concern(
-        self, mock_types: MagicMock, mock_agent_class: MagicMock
+        self, mock_types: MagicMock, mock_agent_class: MagicMock, mock_runner_class: MagicMock
     ) -> None:
         """Test that routing identifies requests needing multiple agents."""
         # Arrange
-        mock_agent_instance = MagicMock()
-        mock_agent_class.return_value = mock_agent_instance
-        mock_agent_instance.run_async.return_value = _async_return("Routing")
+        mock_runner_instance = MagicMock()
+        mock_runner_class.return_value = mock_runner_instance
+        mock_runner_instance.app_name = "TransplantCoordinator"
+
+        # Mock session service
+        mock_session_service = AsyncMock()
+        mock_session_service.get_session.return_value = MagicMock()
+        mock_runner_instance.session_service = mock_session_service
+
+        # Mock run_async to return async generator
+        mock_runner_instance.run_async.side_effect = lambda **_: _async_generator_mock("Routing")
 
         agent = TransplantCoordinatorAgent(api_key="test_key")
 
@@ -319,4 +380,4 @@ class TestTransplantCoordinatorAgent:
 
         # Assert
         assert "MedicationAdvisor" in responses
-        assert responses["MedicationAdvisor"]["status"] == "consulted"
+        assert responses["MedicationAdvisor"]["status"] == "success"
