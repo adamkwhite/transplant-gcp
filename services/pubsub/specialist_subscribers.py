@@ -11,7 +11,7 @@ import os
 import time
 from typing import Any
 
-from google.cloud import pubsub_v1
+from google.cloud import pubsub_v1  # type: ignore[attr-defined]
 
 # Import real specialist agents (PR #14 fixed ADK 1.16.0 compatibility)
 from services.agents.drug_interaction_agent import DrugInteractionCheckerAgent

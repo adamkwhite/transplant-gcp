@@ -11,7 +11,7 @@ import threading
 import time
 from typing import Any
 
-from google.cloud import pubsub_v1
+from google.cloud import pubsub_v1  # type: ignore[attr-defined]
 
 
 class ResponseAggregator:
