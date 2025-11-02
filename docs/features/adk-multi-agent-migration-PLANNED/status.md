@@ -11,18 +11,18 @@ Refactoring existing single-service architecture into Google ADK multi-agent sys
 
 ## Task Completion Summary
 
-### Overall Progress: 50% (4/8 major tasks completed)
+### Overall Progress: 62% (5/8 major tasks completed)
 
 - [x] 0.0 Repository Setup with Best Practices (27/27 subtasks) ✅ **PR #1**
 - [x] 1.0 Set Up ADK Framework and Dependencies (5/5 subtasks) ✅ **PR #4**
 - [x] 2.0 Implement Core Agent Classes (13/13 subtasks) ✅ **PR #8, #13, #14**
 - [x] 3.0 Build Multi-Agent Communication Layer (7/7 subtasks) ✅ **PR #9, #10, #11**
-- [ ] 4.0 Create Backward-Compatible REST API Integration (0/9 subtasks)
+- [x] 4.0 Integrate ADK Agents into REST API (9/9 subtasks) ✅ **Commit 6257091**
 - [ ] 5.0 Deploy Agents to Google Cloud Run (0/13 subtasks)
 - [ ] 6.0 Testing and Validation (4/14 subtasks - partial: unit tests complete)
-- [ ] 7.0 Documentation and Demo Preparation (1/15 subtasks - partial: architecture comparison)
+- [ ] 7.0 Documentation and Demo Preparation (3/15 subtasks - partial: architecture comparison, README update)
 
-**Total:** 57/103 subtasks completed (55%)
+**Total:** 66/103 subtasks completed (64%)
 
 ## Key Milestones
 
@@ -68,13 +68,15 @@ Refactoring existing single-service architecture into Google ADK multi-agent sys
 
 ## Completed Work (Nov 2, 2025)
 
-**✅ Tasks 0.0-3.0 Complete:**
+**✅ Tasks 0.0-4.0 Complete:**
 - Repository setup with pre-commit hooks, GitHub Actions, SonarCloud integration
 - ADK framework installed and configured (ADK 1.17.0, downgraded to 1.16.0, then upgraded back)
 - All 4 core agent classes implemented with real Gemini API integration
 - 3 parallel multi-agent communication architectures implemented and benchmarked
 - Comprehensive benchmark analysis and architecture comparison document created
 - Issue #15 resolved: Pub/Sub now uses real agents instead of mocks
+- **Task 4.0:** ADK agents integrated into existing REST API (services/missed-dose/main.py)
+- Backward compatibility maintained - same endpoints, ADK backend
 
 **📊 Benchmark Results:**
 - ADK: 2.72s mean latency (production winner)
@@ -108,8 +110,8 @@ None - ready to proceed with Task 4.0 (REST API Integration)
 - [x] 4 ADK agents implemented ✅
 - [x] Agents communicate via ADK patterns (sub_agents) ✅
 - [x] Multi-agent benchmarking complete ✅
-- [ ] Backward compatibility maintained (existing REST endpoints work)
-- [ ] All services deployed to Cloud Run
+- [x] Backward compatibility maintained (existing REST endpoints work) ✅
+- [ ] All services deployed to Cloud Run (in progress)
 - [ ] Architecture diagram created (partial: comparison doc exists)
 - [ ] Demo video prepared
 - [x] Qualifies for "Best of AI Agents" hackathon category ✅
