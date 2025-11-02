@@ -19,25 +19,32 @@ gcloud config set project $PROJECT_ID
 echo ""
 echo "📦 Preparing deployment..."
 
-# Copy gemini_client to the service directory for Docker build
+# Copy ADK agents and config to service directory for Docker build
+echo "  → Copying ADK agents and config..."
+cp -r services/agents services/missed-dose/services/
+cp -r services/config services/missed-dose/services/
+
+# Also copy gemini_client (legacy, but keep for now)
 cp services/gemini_client.py services/missed-dose/
 
 # Deploy to Cloud Run
-echo "🔨 Building and deploying to Cloud Run..."
+echo "🔨 Building and deploying to Cloud Run with ADK agents..."
 echo "This will build the container and deploy in one step..."
 
 cd services/missed-dose
 
 # Deploy with source (builds automatically)
+# Increased memory for ADK agents (4 agents + coordinator = ~1GB recommended)
 gcloud run deploy $SERVICE_NAME \
     --source . \
     --region $REGION \
     --allow-unauthenticated \
-    --memory 512Mi \
-    --cpu 1 \
-    --timeout 60 \
+    --memory 1Gi \
+    --cpu 2 \
+    --timeout 300 \
     --max-instances 10 \
-    --set-env-vars="GOOGLE_CLOUD_PROJECT=$PROJECT_ID"
+    --set-env-vars="GOOGLE_CLOUD_PROJECT=$PROJECT_ID" \
+    --platform managed
 
 # Get the service URL
 SERVICE_URL=$(gcloud run services describe $SERVICE_NAME --region=$REGION --format='value(status.url)')

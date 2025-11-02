@@ -1,5 +1,5 @@
-# Use Python 3.11 slim image for Cloud Run
-FROM python:3.11-slim
+# Use Python 3.12 slim image for Cloud Run (ADK requires 3.12+)
+FROM python:3.12-slim
 
 # Set working directory
 WORKDIR /app
@@ -8,8 +8,12 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy application files
-COPY . .
+# Copy service files
+COPY main.py .
+
+# Copy ADK agents and config from parent directory
+# (deploy.sh will copy these before build)
+COPY services/ ./services/
 
 # Set environment variables
 ENV PORT=8080

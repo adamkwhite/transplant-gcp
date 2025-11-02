@@ -50,11 +50,17 @@ transplant-gcp/
    - Click "Create API Key"
    - Copy the key
 
-2. **Deploy to Cloud Run**:
+2. **Deploy to Cloud Run** (with ADK Multi-Agent System):
    ```bash
    chmod +x deploy.sh
    ./deploy.sh
    ```
+
+   The deployment script will:
+   - Copy ADK agents and config to the service directory
+   - Build Docker container with Python 3.12 and google-adk
+   - Deploy to Cloud Run with 1GB memory (for 4 ADK agents)
+   - Configure 2 CPUs for optimal agent performance
 
 3. **Add Gemini API Key**:
    ```bash
@@ -63,15 +69,18 @@ transplant-gcp/
      --region=us-central1
    ```
 
+   **Note:** The service requires GEMINI_API_KEY to initialize all 4 ADK agents.
+
 ### 🧪 Test Endpoints
 
 After deployment, test with your service URL:
 
 ```bash
-# Health check
+# Health check (verify ADK agents are running)
 curl https://your-service-url.run.app/health
+# Expected: Shows "Google ADK Multi-Agent System" with 4 specialists
 
-# Missed dose analysis (with real AI!)
+# Missed dose analysis (powered by MedicationAdvisorAgent)
 curl -X POST https://your-service-url.run.app/medications/missed-dose \
   -H "Content-Type: application/json" \
   -d '{
@@ -80,6 +89,7 @@ curl -X POST https://your-service-url.run.app/medications/missed-dose \
     "current_time": "2:00 PM",
     "patient_id": "maria_rodriguez"
   }'
+# Expected: AI-powered recommendation using Gemini 2.0 Flash
 ```
 
 ### 💰 Cost Analysis
