@@ -48,7 +48,8 @@ jobs:
           echo "Waiting for Pub/Sub emulator to start..."
           sleep 5
 
-          # Create topics and subscriptions
+          # Create topics and subscriptions (set emulator host)
+          export PUBSUB_EMULATOR_HOST=localhost:8085
           python scripts/create_pubsub_topics.py || echo "Topics creation script not found or failed"
 
       - name: Run tests with coverage
