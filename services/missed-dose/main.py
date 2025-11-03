@@ -11,6 +11,7 @@ from datetime import datetime, timedelta
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from google.cloud import firestore
+from werkzeug.exceptions import BadRequest
 
 # Add parent directory to path to import ADK agents
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -193,7 +194,11 @@ def missed_dose():
     """Analyze missed medication dose with Gemini AI"""
     try:
         # Parse and validate request
-        data = request.get_json()
+        try:
+            data = request.get_json()
+        except BadRequest:
+            return jsonify({"error": "Invalid JSON - request body must be valid JSON"}), 400
+
         if data is None:
             return jsonify({"error": "Invalid JSON - request body must be valid JSON"}), 400
 
