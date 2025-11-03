@@ -26,7 +26,8 @@
       "Bash(./deploy.sh:*)",
       "Bash(tee:*)",
       "Bash(curl:*)",
-      "Bash(gcloud run services logs read:*)"
+      "Bash(gcloud run services logs read:*)",
+      "Bash(gcloud run services update:*)"
     ],
     "deny": [],
     "ask": []
