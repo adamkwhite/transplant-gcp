@@ -1,9 +1,11 @@
-# Legacy Service Dependencies (will be deprecated after ADK migration)
-Flask==3.0.0
-flask-cors>=4.0.2
+# Google ADK for multi-agent system (install first)
+google-adk==1.17.0
+
+# Google Cloud Services
 google-cloud-firestore==2.13.0
 google-generativeai==0.3.0
-gunicorn>=23.0.0
 
-# Google ADK for multi-agent system
-google-adk>=1.17.0
+# Web Framework
+Flask==3.0.0
+flask-cors>=4.0.2
+gunicorn>=23.0.0

@@ -21,11 +21,9 @@ echo "📦 Preparing deployment..."
 
 # Copy ADK agents and config to service directory for Docker build
 echo "  → Copying ADK agents and config..."
+mkdir -p services/missed-dose/services/
 cp -r services/agents services/missed-dose/services/
 cp -r services/config services/missed-dose/services/
-
-# Also copy gemini_client (legacy, but keep for now)
-cp services/gemini_client.py services/missed-dose/
 
 # Deploy to Cloud Run
 echo "🔨 Building and deploying to Cloud Run with ADK agents..."
