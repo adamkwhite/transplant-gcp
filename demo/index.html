@@ -319,7 +319,7 @@
         <!-- Header -->
         <div class="header">
             <h1>🏥 Transplant Medication Adherence Agent</h1>
-            <p>AI-Powered Clinical Decision Support | NVIDIA Nano-8B + AWS</p>
+            <p>AI-Powered Clinical Decision Support | Google Gemini 2.0 + Cloud Run</p>
         </div>
 
         <!-- Patient Card -->
@@ -487,11 +487,11 @@
     </div>
 
     <script>
-        // For demo purposes, we'll use mock API responses
-        // In production, these would call the actual AWS Lambda endpoints
+        // Missed Dose API is live on Google Cloud Run
+        // Rejection Risk and Drug Interaction APIs use mock data (coming soon)
 
-        const API_BASE = 'https://your-api-gateway-url.execute-api.us-east-1.amazonaws.com/prod';
-        const USE_MOCK = true; // Set to false when AWS is ready
+        const API_BASE = 'https://missed-dose-service-64rz4skmdq-uc.a.run.app';
+        const USE_MOCK = true; // Set to false when all APIs are deployed
 
         function showTab(tabName) {
             // Hide all sections
