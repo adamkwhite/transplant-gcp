@@ -161,6 +161,7 @@ class MedicationAdvisorAgent:
             prompt_parts.append(f"- Patient context: {patient_context}")
 
         # Add SRTR population statistics if patient context includes required fields
+        srtr_data_available = False
         if patient_context:
             organ = patient_context.get("organ_type", "kidney")
             age_group = patient_context.get("age_group", "35-49")
@@ -169,20 +170,35 @@ class MedicationAdvisorAgent:
             try:
                 srtr = get_srtr_data(organ)
                 population_stats = srtr.format_for_prompt(age_group, months_post_tx)
+                rejection_rate = srtr.get_acute_rejection_rate(age_group)
+
                 prompt_parts.extend(
                     [
-                        "\n--- Real Clinical Outcomes Data ---",
+                        "\n--- Real Clinical Outcomes Data (SRTR 2023) ---",
                         population_stats,
                         "\nUse these population statistics to contextualize your risk assessment.",
+                        "\nIMPORTANT: Include a 'srtr_data_source' section in your response showing:",
+                        "- Source: SRTR 2023 Annual Data Report",
+                        f"- Organ: {organ.capitalize()}",
+                        f"- Age Group: {age_group}",
+                        f"- Baseline Rejection Rate: {rejection_rate}%",
+                        f"- Total Records in Database: {srtr._summary.get('total_records', 'N/A')} {organ} transplant recipients",  # type: ignore[union-attr]
                     ]
                 )
+                srtr_data_available = True
             except Exception:
                 # If SRTR data unavailable, continue without it
-                pass
+                prompt_parts.append("\n--- WARNING: SRTR data unavailable (demo mode) ---")
 
         prompt_parts.append(
             "\nProvide a JSON response with: recommendation, reasoning_steps (list), "
-            "risk_level, confidence (0.0-1.0), next_steps (list)."
+            "risk_level, confidence (0.0-1.0), next_steps (list)"
+            + (
+                ", srtr_data_source (dict with source, organ, age_group, baseline_rejection_rate, total_records)"
+                if srtr_data_available
+                else ""
+            )
+            + "."
         )
 
         return "\n".join(prompt_parts)
