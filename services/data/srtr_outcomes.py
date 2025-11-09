@@ -144,11 +144,11 @@ class SRTROutcomesData:
 
         return f"""Population Statistics (SRTR 2023 - {self.organ.capitalize()} Transplant):
 - Organ: {self.organ.capitalize()}
-- Age Group: {context['age_group']}
-- Time Post-Transplant: {context['months_post_transplant']} months
-- Baseline Acute Rejection Rate: {context['baseline_rejection_rate']:.2f}%
-- Expected Graft Survival: {context['expected_graft_survival']:.2f}%
-- Data Source: {context['data_source']}"""
+- Age Group: {context["age_group"]}
+- Time Post-Transplant: {context["months_post_transplant"]} months
+- Baseline Acute Rejection Rate: {context["baseline_rejection_rate"]:.2f}%
+- Expected Graft Survival: {context["expected_graft_survival"]:.2f}%
+- Data Source: {context["data_source"]}"""
 
     def get_risk_multiplier(self, hours_late: float, age_group: str) -> tuple[float, str]:
         """
