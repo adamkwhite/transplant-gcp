@@ -363,6 +363,30 @@
                     </select>
                 </div>
 
+                <div class="symptom-grid">
+                    <div class="form-group">
+                        <label>Organ Type (for SRTR data)</label>
+                        <select id="organ-type">
+                            <option value="kidney" selected>Kidney</option>
+                            <option value="liver">Liver</option>
+                            <option value="heart">Heart</option>
+                            <option value="lung">Lung</option>
+                            <option value="pancreas">Pancreas</option>
+                            <option value="intestine">Intestine</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Age Group</label>
+                        <select id="age-group">
+                            <option value="18-34">18-34 years</option>
+                            <option value="35-49" selected>35-49 years</option>
+                            <option value="50-64">50-64 years</option>
+                            <option value="65+">65+ years</option>
+                        </select>
+                    </div>
+                </div>
+
                 <div class="form-group">
                     <label>Scheduled Time</label>
                     <input type="time" id="scheduled-time" value="08:00" />
@@ -518,13 +542,15 @@
             const medication = document.getElementById('medication').value;
             const scheduledTime = document.getElementById('scheduled-time').value;
             const currentTime = document.getElementById('current-time').value;
+            const organType = document.getElementById('organ-type').value;
+            const ageGroup = document.getElementById('age-group').value;
 
             // Show loading
             document.getElementById('missed-dose-loading').classList.add('show');
             document.getElementById('missed-dose-result').classList.remove('show');
 
             try {
-                // Call Cloud Run API
+                // Call Cloud Run API with patient context for SRTR data
                 const response = await fetch('https://missed-dose-service-64rz4skmdq-uc.a.run.app/medications/missed-dose', {
                     method: 'POST',
                     headers: {
@@ -534,7 +560,12 @@
                         medication: medication,
                         scheduled_time: scheduledTime,
                         current_time: currentTime,
-                        patient_id: 'maria_rodriguez'
+                        patient_id: 'maria_rodriguez',
+                        patient_context: {
+                            organ_type: organType,
+                            age_group: ageGroup,
+                            months_post_transplant: 6
+                        }
                     })
                 });
 
