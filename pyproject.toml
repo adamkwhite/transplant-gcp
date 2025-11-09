@@ -95,6 +95,7 @@ exclude = [
     "build/",
     "dist/",
     "services/missed-dose/",  # Legacy service directory with duplicate modules
+    "scripts/",  # Utility scripts - not production code
 ]
 
 # Per-module options

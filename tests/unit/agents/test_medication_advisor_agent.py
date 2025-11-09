@@ -58,14 +58,24 @@ class TestMedicationAdvisorAgent:
         # Assert - should use GEMINI_API_KEY from config
         assert agent.api_key is not None
 
+    @patch("services.agents.medication_advisor_agent.get_srtr_data")
     @patch("services.agents.medication_advisor_agent.Runner")
     @patch("services.agents.medication_advisor_agent.Agent")
     @patch("services.agents.medication_advisor_agent.types")
     def test_analyze_missed_dose_calls_agent(
-        self, mock_types: MagicMock, mock_agent_class: MagicMock, mock_runner_class: MagicMock
+        self,
+        mock_types: MagicMock,
+        mock_agent_class: MagicMock,
+        mock_runner_class: MagicMock,
+        mock_get_srtr: MagicMock,
     ) -> None:
         """Test that analyze_missed_dose invokes the agent with correct prompt."""
         # Arrange
+        # Mock SRTR data
+        mock_srtr = MagicMock()
+        mock_srtr.format_for_prompt.return_value = "Population stats: 6.19% rejection rate"
+        mock_get_srtr.return_value = mock_srtr
+
         mock_runner_instance = MagicMock()
         mock_runner_class.return_value = mock_runner_instance
         mock_runner_instance.app_name = "MedicationAdvisor"
@@ -222,13 +232,19 @@ class TestMedicationAdvisorAgent:
         assert window1 == window2 == window3
         assert window1["window_hours"] == 12
 
+    @patch("services.agents.medication_advisor_agent.get_srtr_data")
     @patch("services.agents.medication_advisor_agent.Agent")
     @patch("services.agents.medication_advisor_agent.types")
     def test_build_missed_dose_prompt_includes_all_params(
-        self, mock_types: MagicMock, mock_agent_class: MagicMock
+        self, mock_types: MagicMock, mock_agent_class: MagicMock, mock_get_srtr: MagicMock
     ) -> None:
         """Test that prompt builder includes all provided parameters."""
         # Arrange
+        # Mock SRTR data
+        mock_srtr = MagicMock()
+        mock_srtr.format_for_prompt.return_value = "Population stats: 6.19% rejection rate"
+        mock_get_srtr.return_value = mock_srtr
+
         mock_agent_instance = MagicMock()
         mock_agent_class.return_value = mock_agent_instance
 

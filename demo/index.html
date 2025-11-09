@@ -559,27 +559,66 @@
 
             let html = '<h3>AI Reasoning & Recommendation</h3>';
 
+            // Parse the recommendation field if it contains JSON
+            let parsedRecommendation = null;
+            if (data.recommendation && data.recommendation.includes('```json')) {
+                const jsonMatch = data.recommendation.match(/```json\n([\s\S]*?)\n```/);
+                if (jsonMatch) {
+                    try {
+                        parsedRecommendation = JSON.parse(jsonMatch[1]);
+                    } catch (e) {
+                        console.error('Failed to parse recommendation JSON:', e);
+                    }
+                }
+            }
+
             // Show reasoning chain
             html += '<div class="reasoning-chain"><h4>Clinical Reasoning Process:</h4>';
-            data.reasoning_chain.forEach(step => {
+            const reasoningSteps = parsedRecommendation?.reasoning_steps || data.reasoning_chain || [];
+            reasoningSteps.forEach(step => {
                 html += `<div class="reasoning-step">${step}</div>`;
             });
             html += '</div>';
 
             // Show recommendation
-            const alertClass = data.urgency === 'high' ? 'alert-danger' : data.urgency === 'medium' ? 'alert-warning' : 'alert-success';
-            html += `<div class="recommendation ${alertClass}">${data.recommendation.toUpperCase()}</div>`;
+            const recommendationText = parsedRecommendation?.recommendation || data.recommendation;
+            const riskLevel = parsedRecommendation?.risk_level || data.risk_level || 'medium';
+            const alertClass = riskLevel.toLowerCase() === 'high' || riskLevel.toLowerCase() === 'critical'
+                ? 'alert-danger'
+                : riskLevel.toLowerCase() === 'medium'
+                    ? 'alert-warning'
+                    : 'alert-success';
+            html += `<div class="recommendation ${alertClass}">${recommendationText.toUpperCase()}</div>`;
 
-            // Show explanation
-            html += `<p style="font-size: 1.1rem; margin: 20px 0;">${data.explanation}</p>`;
+            // Show next steps
+            const nextSteps = parsedRecommendation?.next_steps || data.next_steps || [];
+            if (nextSteps.length > 0) {
+                html += '<h4 style="margin-top: 30px;">Next Steps:</h4>';
+                html += '<ul style="font-size: 1.1rem; line-height: 1.8;">';
+                nextSteps.forEach(step => {
+                    html += `<li>${step}</li>`;
+                });
+                html += '</ul>';
+            }
 
-            // Show adherence warning if present
-            if (data.adherence_warning) {
+            // Show adherence metrics if present
+            if (data.adherence_metrics) {
                 html += `
-                    <div class="adherence-warning">
-                        <div class="warning-icon">⚠️</div>
-                        <div>${data.adherence_warning}</div>
+                    <div style="background: #fff5e6; padding: 15px; border-radius: 8px; margin-top: 20px; border-left: 4px solid #f59e0b;">
+                        <h4 style="margin-top: 0;">📊 Adherence Metrics</h4>
+                        <p style="margin: 5px 0;"><strong>Current Rate:</strong> ${data.adherence_metrics.current_rate}</p>
+                        <p style="margin: 5px 0;"><strong>Doses Missed This Week:</strong> ${data.adherence_metrics.doses_missed_this_week}</p>
                     </div>
+                `;
+            }
+
+            // Show confidence level
+            const confidence = parsedRecommendation?.confidence || data.confidence;
+            if (confidence) {
+                html += `
+                    <p style="text-align: right; color: #666; font-size: 0.9rem; margin-top: 20px;">
+                        AI Confidence: ${(confidence * 100).toFixed(0)}%
+                    </p>
                 `;
             }
 
