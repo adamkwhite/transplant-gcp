@@ -18,6 +18,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from services.agents.coordinator_agent import TransplantCoordinatorAgent
 from services.agents.drug_interaction_agent import DrugInteractionCheckerAgent
 from services.agents.medication_advisor_agent import MedicationAdvisorAgent
+from services.agents.rejection_risk_agent import RejectionRiskAgent
 from services.agents.symptom_monitor_agent import SymptomMonitorAgent
 
 # Constants
@@ -40,6 +41,7 @@ if not api_key:
     logger.warning("GEMINI_API_KEY not set - agents will use config default")
 
 medication_advisor = MedicationAdvisorAgent(api_key=api_key)
+rejection_risk = RejectionRiskAgent(api_key=api_key)
 symptom_monitor = SymptomMonitorAgent(api_key=api_key)
 drug_interaction_checker = DrugInteractionCheckerAgent(api_key=api_key)
 coordinator = TransplantCoordinatorAgent(
@@ -173,6 +175,7 @@ def health_check():
                 "coordinator": "TransplantCoordinator",
                 "specialists": [
                     "MedicationAdvisor",
+                    "RejectionRiskAnalyzer",
                     "SymptomMonitor",
                     "DrugInteractionChecker",
                 ],
@@ -340,6 +343,84 @@ def missed_dose():
         return jsonify({"error": str(e)}), 500
 
 
+@app.route("/rejection/analyze", methods=["POST"])
+def analyze_rejection_risk():
+    """Analyze transplant rejection risk based on symptoms"""
+    try:
+        # Parse and validate request
+        try:
+            data = request.get_json()
+        except BadRequest:
+            return jsonify({"error": "Invalid JSON - request body must be valid JSON"}), 400
+
+        if data is None:
+            return jsonify({"error": "Invalid JSON - request body must be valid JSON"}), 400
+
+        # Validate required fields
+        required_fields = ["symptoms"]
+        missing_fields = [field for field in required_fields if not data.get(field)]
+
+        if missing_fields:
+            return (
+                jsonify(
+                    {
+                        "error": "Missing required fields",
+                        "missing": missing_fields,
+                        "required": required_fields,
+                    }
+                ),
+                400,
+            )
+
+        symptoms = data.get("symptoms", {})
+        patient_id = data.get("patient_id", "demo_patient")
+        patient_context = data.get("patient_context")
+
+        # Get AI-powered rejection risk analysis from ADK RejectionRiskAgent
+        agent_response = rejection_risk.analyze_rejection_risk(
+            symptoms=symptoms, patient_id=patient_id, patient_context=patient_context
+        )
+
+        # Record interaction
+        record_interaction(
+            patient_id,
+            "rejection_analysis",
+            {
+                "symptoms": symptoms,
+                "rejection_probability": agent_response.get("rejection_probability", 0.0),
+                "urgency": agent_response.get("urgency", "MEDIUM"),
+                "ai_system": "ADK RejectionRiskAnalyzer",
+                "risk_level": agent_response.get("risk_level", "medium"),
+            },
+        )
+
+        # Build response
+        response = {
+            "rejection_probability": agent_response.get("rejection_probability", 0.75),
+            "urgency": agent_response.get("urgency", "HIGH"),
+            "risk_level": agent_response.get("risk_level", "critical"),
+            "recommended_action": agent_response.get(
+                "recommended_action", "Contact transplant team immediately"
+            ),
+            "reasoning_steps": agent_response.get("reasoning_steps", []),
+            "similar_cases": agent_response.get("similar_cases", []),
+            "infrastructure": {
+                "platform": PLATFORM_NAME,
+                "database": "Firestore",
+                "ai_system": "Google ADK Multi-Agent System",
+                "ai_model": "gemini-2.0-flash-exp",
+                "agent_used": "RejectionRiskAnalyzer",
+                "region": os.environ.get("REGION", "us-central1"),
+            },
+        }
+
+        return jsonify(response)
+
+    except Exception as e:
+        logger.error(f"Error in analyze_rejection_risk: {e}")
+        return jsonify({"error": str(e)}), 500
+
+
 @app.route("/", methods=["GET"])
 def index():
     """Root endpoint"""
@@ -348,7 +429,7 @@ def index():
             "service": "Transplant Medication Adherence - Missed Dose Analysis",
             "version": "1.0",
             "platform": PLATFORM_NAME,
-            "endpoints": ["/health", "/medications/missed-dose"],
+            "endpoints": ["/health", "/medications/missed-dose", "/rejection/analyze"],
         }
     )
 
