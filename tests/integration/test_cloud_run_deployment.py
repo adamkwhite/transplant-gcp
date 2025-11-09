@@ -49,9 +49,10 @@ class TestCloudRunHealth:
 
         specialists = data["agents"]["specialists"]
         assert "MedicationAdvisor" in specialists
+        assert "RejectionRiskAnalyzer" in specialists
         assert "SymptomMonitor" in specialists
         assert "DrugInteractionChecker" in specialists
-        assert len(specialists) == 3
+        assert len(specialists) == 4
 
     def test_health_shows_correct_model(self):
         """Test that health endpoint shows correct AI model."""
