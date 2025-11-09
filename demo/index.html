@@ -683,30 +683,59 @@
                 urine_output: document.getElementById('urine-output').value
             };
 
+            // Get organ type and age group from form (if available) or use defaults
+            const organType = document.getElementById('organ-type') ? document.getElementById('organ-type').value : 'kidney';
+            const ageGroup = document.getElementById('age-group') ? document.getElementById('age-group').value : '35-49';
+
             // Show loading
             document.getElementById('rejection-loading').classList.add('show');
             document.getElementById('rejection-result').classList.remove('show');
 
-            // Simulate API call
-            setTimeout(() => {
-                const response = {
+            try {
+                // Call real Cloud Run API
+                const response = await fetch('https://missed-dose-service-64rz4skmdq-uc.a.run.app/rejection/analyze', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        symptoms: symptoms,
+                        patient_id: 'maria_rodriguez',
+                        patient_context: {
+                            organ_type: organType,
+                            age_group: ageGroup,
+                            months_post_transplant: 6
+                        }
+                    })
+                });
+
+                const data = await response.json();
+
+                // Transform API response to match display format
+                const displayData = {
                     query_symptoms: `fever ${symptoms.fever}F, weight gain ${symptoms.weight_gain} lbs, fatigue ${symptoms.fatigue}, urine output ${symptoms.urine_output}`,
-                    similar_cases_analyzed: 20,
-                    rejection_cases: 15,
-                    rejection_probability: '75%',
-                    urgency: 'HIGH',
-                    risk_level: 'Critical',
-                    recommended_action: 'Contact transplant team IMMEDIATELY',
-                    top_similar_cases: [
-                        {symptoms: 'fever 99.8F, weight gain 4 lbs, decreased urine', outcome: 'rejection_confirmed', similarity: 0.92},
-                        {symptoms: 'fever 99.5F, weight gain 3 lbs, fatigue', outcome: 'rejection_confirmed', similarity: 0.89},
-                        {symptoms: 'fever 99.2F, weight gain 2 lbs', outcome: 'rejection_confirmed', similarity: 0.85}
-                    ]
+                    rejection_probability: `${(data.rejection_probability * 100).toFixed(0)}%`,
+                    urgency: data.urgency,
+                    risk_level: data.risk_level,
+                    recommended_action: data.recommended_action,
+                    reasoning_steps: data.reasoning_steps,
+                    top_similar_cases: data.similar_cases || [],
+                    srtr_data_source: data.srtr_data_source
                 };
 
-                displayRejectionResult(response);
+                displayRejectionResult(displayData);
+            } catch (error) {
+                console.error('API Error:', error);
+                document.getElementById('rejection-result').innerHTML = `
+                    <div class="alert alert-danger">
+                        <h3>Error</h3>
+                        <p>Unable to connect to rejection analysis service. Please try again.</p>
+                    </div>
+                `;
+                document.getElementById('rejection-result').classList.add('show');
+            } finally {
                 document.getElementById('rejection-loading').classList.remove('show');
-            }, 2500);
+            }
         });
 
         function displayRejectionResult(data) {
@@ -728,12 +757,17 @@
                         <div style="font-size: 2rem; color: #e53e3e; font-weight: bold;">${data.rejection_probability}</div>
                         <div style="color: #666;">Rejection Probability</div>
                     </div>
-                    <div style="text-align: center; padding: 15px; background: white; border-radius: 8px;">
-                        <div style="font-size: 2rem; color: #e53e3e; font-weight: bold;">${data.rejection_cases}/${data.similar_cases_analyzed}</div>
-                        <div style="color: #666;">Similar Cases with Rejection</div>
-                    </div>
                 </div>
             `;
+
+            // Show reasoning steps if available
+            if (data.reasoning_steps && data.reasoning_steps.length > 0) {
+                html += '<div class="reasoning-chain"><h4>Clinical Reasoning Process:</h4>';
+                data.reasoning_steps.forEach(step => {
+                    html += `<div class="reasoning-step">${step}</div>`;
+                });
+                html += '</div>';
+            }
 
             // Show recommendation
             html += `
@@ -742,19 +776,36 @@
                 </div>
             `;
 
-            // Show similar cases
-            html += '<h4>Similar Patient Cases (via Embedding Retrieval):</h4>';
-            html += '<div style="background: white; padding: 15px; border-radius: 8px; margin-top: 10px;">';
-            data.top_similar_cases.forEach(case_ => {
+            // Show similar cases if available
+            if (data.top_similar_cases && data.top_similar_cases.length > 0) {
+                html += '<h4>Similar Patient Cases (from SRTR Data):</h4>';
+                html += '<div style="background: white; padding: 15px; border-radius: 8px; margin-top: 10px;">';
+                data.top_similar_cases.forEach(case_ => {
+                    html += `
+                        <div style="padding: 10px; margin: 5px 0; background: #fff5f5; border-left: 3px solid #e53e3e; border-radius: 4px;">
+                            <strong>Symptoms:</strong> ${case_.symptoms}<br>
+                            <strong>Outcome:</strong> <span style="color: #e53e3e;">${case_.outcome}</span><br>
+                            <strong>Similarity:</strong> ${(case_.similarity * 100).toFixed(0)}%
+                        </div>
+                    `;
+                });
+                html += '</div>';
+            }
+
+            // Show SRTR data source if present
+            if (data.srtr_data_source) {
+                const srtr = data.srtr_data_source;
                 html += `
-                    <div style="padding: 10px; margin: 5px 0; background: #fff5f5; border-left: 3px solid #e53e3e; border-radius: 4px;">
-                        <strong>Symptoms:</strong> ${case_.symptoms}<br>
-                        <strong>Outcome:</strong> <span style="color: #e53e3e;">${case_.outcome}</span><br>
-                        <strong>Similarity:</strong> ${(case_.similarity * 100).toFixed(0)}%
+                    <div style="background: #e6f7ff; padding: 15px; border-radius: 8px; margin-top: 20px; border-left: 4px solid #1890ff;">
+                        <h4 style="margin-top: 0;">📊 Real Clinical Data Source (SRTR 2023)</h4>
+                        <p style="margin: 5px 0;"><strong>Source:</strong> ${srtr.source}</p>
+                        <p style="margin: 5px 0;"><strong>Organ:</strong> ${srtr.organ}</p>
+                        <p style="margin: 5px 0;"><strong>Age Group:</strong> ${srtr.age_group}</p>
+                        <p style="margin: 5px 0;"><strong>Baseline Rejection Rate:</strong> ${srtr.baseline_rejection_rate}%</p>
+                        <p style="margin: 5px 0;"><strong>Total Records:</strong> ${srtr.total_records.toLocaleString()} ${srtr.organ.toLowerCase()} transplant recipients</p>
                     </div>
                 `;
-            });
-            html += '</div>';
+            }
 
             // Add call button
             html += `
