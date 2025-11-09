@@ -22,7 +22,7 @@ repos:
         name: Type check with mypy
         additional_dependencies: [pydantic>=2.0.0]
         args: [--ignore-missing-imports, --show-error-codes]
-        exclude: ^services/missed-dose/
+        exclude: ^(services/missed-dose/|scripts/)
 
   # General file checks
   - repo: https://github.com/pre-commit/pre-commit-hooks

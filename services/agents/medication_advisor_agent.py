@@ -3,6 +3,9 @@ MedicationAdvisor Agent Implementation
 
 Specialized ADK agent for analyzing missed medication doses and providing
 evidence-based recommendations for transplant patients.
+
+Integrates real clinical outcomes data from SRTR (Scientific Registry of
+Transplant Recipients) to provide population-based risk assessments.
 """
 
 import asyncio
@@ -20,6 +23,7 @@ from services.config.adk_config import (
     GEMINI_API_KEY,
     MEDICATION_ADVISOR_CONFIG,
 )
+from services.data.srtr_outcomes import get_srtr_data
 
 
 class MedicationAdvisorAgent:
@@ -142,7 +146,7 @@ class MedicationAdvisorAgent:
         patient_id: str | None,
         patient_context: dict[str, Any] | None,
     ) -> str:
-        """Build structured prompt for missed dose analysis."""
+        """Build structured prompt for missed dose analysis with SRTR population data."""
         prompt_parts = [
             "Analyze this missed dose scenario:",
             f"- Medication: {medication}",
@@ -155,6 +159,26 @@ class MedicationAdvisorAgent:
 
         if patient_context:
             prompt_parts.append(f"- Patient context: {patient_context}")
+
+        # Add SRTR population statistics if patient context includes required fields
+        if patient_context:
+            organ = patient_context.get("organ_type", "kidney")
+            age_group = patient_context.get("age_group", "35-49")
+            months_post_tx = patient_context.get("months_post_transplant", 6)
+
+            try:
+                srtr = get_srtr_data(organ)
+                population_stats = srtr.format_for_prompt(age_group, months_post_tx)
+                prompt_parts.extend(
+                    [
+                        "\n--- Real Clinical Outcomes Data ---",
+                        population_stats,
+                        "\nUse these population statistics to contextualize your risk assessment.",
+                    ]
+                )
+            except Exception:
+                # If SRTR data unavailable, continue without it
+                pass
 
         prompt_parts.append(
             "\nProvide a JSON response with: recommendation, reasoning_steps (list), "

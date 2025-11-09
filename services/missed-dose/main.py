@@ -11,6 +11,7 @@ from datetime import datetime, timedelta
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from google.cloud import firestore
+from werkzeug.exceptions import BadRequest
 
 # Add parent directory to path to import ADK agents
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -61,18 +62,31 @@ def find_medication(name):
             "half_life": "12 hours",
             "interactions": ["grapefruit", "ketoconazole", "erythromycin"],
         },
+        "cyclosporine": {
+            "name": "Cyclosporine",
+            "category": "calcineurin_inhibitor",
+            "time_window_hours": 12,
+            "critical": True,
+            "target_levels": "100-400 ng/mL",
+            "half_life": "8-27 hours",
+            "interactions": ["grapefruit", "St. John's Wort", "clarithromycin"],
+        },
         "mycophenolate": {
             "name": "Mycophenolate",
             "category": "antiproliferative",
             "time_window_hours": 12,
             "critical": True,
             "target_levels": "1-3.5 mg/L",
+            "half_life": "16-18 hours",
+            "interactions": ["antacids", "cholestyramine", "magnesium"],
         },
         "prednisone": {
             "name": "Prednisone",
             "category": "corticosteroid",
             "time_window_hours": 24,
             "critical": False,
+            "half_life": "3-4 hours",
+            "interactions": ["NSAIDs", "warfarin"],
         },
     }
     return medications.get(name.lower())
@@ -169,12 +183,41 @@ def health_check():
     )
 
 
+@app.errorhandler(400)
+def handle_bad_request(e):
+    """Handle malformed JSON and bad requests"""
+    return jsonify({"error": "Invalid request", "message": str(e)}), 400
+
+
 @app.route("/medications/missed-dose", methods=["POST"])
 def missed_dose():
     """Analyze missed medication dose with Gemini AI"""
     try:
-        # Parse request
-        data = request.get_json()
+        # Parse and validate request
+        try:
+            data = request.get_json()
+        except BadRequest:
+            return jsonify({"error": "Invalid JSON - request body must be valid JSON"}), 400
+
+        if data is None:
+            return jsonify({"error": "Invalid JSON - request body must be valid JSON"}), 400
+
+        # Validate required fields
+        required_fields = ["medication", "scheduled_time", "current_time", "patient_id"]
+        missing_fields = [field for field in required_fields if not data.get(field)]
+
+        if missing_fields:
+            return (
+                jsonify(
+                    {
+                        "error": "Missing required fields",
+                        "missing": missing_fields,
+                        "required": required_fields,
+                    }
+                ),
+                400,
+            )
+
         medication_name = data.get("medication", "").lower()
         scheduled_time = data.get("scheduled_time", "")
         current_time = data.get("current_time", "")
@@ -194,7 +237,36 @@ def missed_dose():
         # Get medication info
         medication = find_medication(medication_name)
         if not medication:
-            return jsonify({"error": f"Medication {medication_name} not found"}), 404
+            # Handle unknown medications gracefully
+            logger.warning(f"Unknown medication requested: {medication_name}")
+            return (
+                jsonify(
+                    {
+                        "recommendation": f"Medication '{medication_name}' is not in our database. Please contact your transplant team immediately for guidance on this medication.",
+                        "risk_level": "unknown",
+                        "confidence": 0.0,
+                        "medication_details": {
+                            "name": medication_name.capitalize(),
+                            "category": "unknown",
+                            "critical": None,
+                        },
+                        "next_steps": [
+                            "Contact your transplant team",
+                            "Have your medication list ready",
+                            "Do not skip doses without medical advice",
+                        ],
+                        "infrastructure": {
+                            "platform": PLATFORM_NAME,
+                            "database": "Firestore",
+                            "ai_system": "Google ADK Multi-Agent System",
+                            "ai_model": "gemini-2.0-flash-exp",
+                            "agent_used": "MedicationAdvisor",
+                            "region": os.environ.get("REGION", "us-central1"),
+                        },
+                    }
+                ),
+                200,
+            )
 
         # Get patient context
         patient_context = get_patient_context(patient_id)
