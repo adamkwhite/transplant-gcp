@@ -12,6 +12,11 @@ license = {text = "MIT"}
 authors = [
     {name = "Adam", email = "adam@example.com"}
 ]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["services*"]
+exclude = ["tests*", "scripts*"]
 keywords = ["ai", "adk", "google-adk", "transplant", "medication", "healthcare", "multi-agent"]
 classifiers = [
     "Development Status :: 4 - Beta",
