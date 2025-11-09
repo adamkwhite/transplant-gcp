@@ -22,8 +22,8 @@ def _async_generator_mock(text: str):
 class TestRejectionRiskAgent:
     """Test suite for RejectionRiskAgent."""
 
-    @patch("services.agents.rejection_risk_agent.Agent")
-    @patch("services.agents.rejection_risk_agent.types")
+    @patch("services.agents.base_adk_agent.Agent")
+    @patch("services.agents.base_adk_agent.types")
     def test_init_creates_agent_with_correct_config(
         self, mock_types: MagicMock, mock_agent_class: MagicMock
     ) -> None:
@@ -46,8 +46,8 @@ class TestRejectionRiskAgent:
             generate_content_config=mock_generate_config,
         )
 
-    @patch("services.agents.rejection_risk_agent.Agent")
-    @patch("services.agents.rejection_risk_agent.types")
+    @patch("services.agents.base_adk_agent.Agent")
+    @patch("services.agents.base_adk_agent.types")
     def test_init_uses_default_api_key(
         self, mock_types: MagicMock, mock_agent_class: MagicMock
     ) -> None:
@@ -59,9 +59,9 @@ class TestRejectionRiskAgent:
         assert agent.api_key is not None
 
     @patch("services.agents.rejection_risk_agent.get_srtr_data")
-    @patch("services.agents.rejection_risk_agent.Runner")
-    @patch("services.agents.rejection_risk_agent.Agent")
-    @patch("services.agents.rejection_risk_agent.types")
+    @patch("services.agents.base_adk_agent.Runner")
+    @patch("services.agents.base_adk_agent.Agent")
+    @patch("services.agents.base_adk_agent.types")
     def test_analyze_rejection_risk_calls_agent(
         self,
         mock_types: MagicMock,
@@ -122,9 +122,9 @@ class TestRejectionRiskAgent:
         assert "similar_cases" in result
         assert "agent_name" in result
 
-    @patch("services.agents.rejection_risk_agent.Runner")
-    @patch("services.agents.rejection_risk_agent.Agent")
-    @patch("services.agents.rejection_risk_agent.types")
+    @patch("services.agents.base_adk_agent.Runner")
+    @patch("services.agents.base_adk_agent.Agent")
+    @patch("services.agents.base_adk_agent.types")
     def test_analyze_rejection_risk_without_optional_params(
         self, mock_types: MagicMock, mock_agent_class: MagicMock, mock_runner_class: MagicMock
     ) -> None:
@@ -157,8 +157,8 @@ class TestRejectionRiskAgent:
         assert result["risk_level"] == "critical"
 
     @patch("services.agents.rejection_risk_agent.get_srtr_data")
-    @patch("services.agents.rejection_risk_agent.Agent")
-    @patch("services.agents.rejection_risk_agent.types")
+    @patch("services.agents.base_adk_agent.Agent")
+    @patch("services.agents.base_adk_agent.types")
     def test_build_rejection_prompt_includes_all_params(
         self, mock_types: MagicMock, mock_agent_class: MagicMock, mock_get_srtr: MagicMock
     ) -> None:
@@ -201,8 +201,8 @@ class TestRejectionRiskAgent:
         assert "kidney" in prompt
         assert "JSON response" in prompt or "SRTR" in prompt
 
-    @patch("services.agents.rejection_risk_agent.Agent")
-    @patch("services.agents.rejection_risk_agent.types")
+    @patch("services.agents.base_adk_agent.Agent")
+    @patch("services.agents.base_adk_agent.types")
     def test_parse_agent_response_returns_structured_format(
         self, mock_types: MagicMock, mock_agent_class: MagicMock
     ) -> None:
