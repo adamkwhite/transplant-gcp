@@ -8,25 +8,14 @@ Integrates real clinical outcomes data from SRTR (Scientific Registry of
 Transplant Recipients) to provide population-based rejection risk scores.
 """
 
-import asyncio
 from typing import Any
 
-from google.adk.agents import Agent  # type: ignore[import-untyped]
-from google.adk.runners import Runner  # type: ignore[import-untyped]
-from google.adk.sessions.in_memory_session_service import (
-    InMemorySessionService,  # type: ignore[import-untyped]
-)
-from google.genai import types  # type: ignore[import-untyped]
-
-from services.config.adk_config import (
-    DEFAULT_GENERATION_CONFIG,
-    GEMINI_API_KEY,
-    REJECTION_RISK_CONFIG,
-)
+from services.agents.base_adk_agent import BaseADKAgent
+from services.config.adk_config import REJECTION_RISK_CONFIG
 from services.data.srtr_outcomes import get_srtr_data
 
 
-class RejectionRiskAgent:
+class RejectionRiskAgent(BaseADKAgent):
     """
     ADK Agent for transplant rejection risk analysis.
 
@@ -44,29 +33,11 @@ class RejectionRiskAgent:
         Args:
             api_key: Gemini API key (defaults to config if not provided)
         """
-        self.api_key = api_key or GEMINI_API_KEY
-
-        # Create ADK agent instance with generation config
-        generate_config = types.GenerateContentConfig(
-            temperature=DEFAULT_GENERATION_CONFIG["temperature"],
-            max_output_tokens=int(DEFAULT_GENERATION_CONFIG["max_output_tokens"]),
-            top_p=DEFAULT_GENERATION_CONFIG["top_p"],
-            top_k=DEFAULT_GENERATION_CONFIG["top_k"],
-        )
-
-        self.agent = Agent(
-            name=REJECTION_RISK_CONFIG["name"],
-            model=REJECTION_RISK_CONFIG["model"],
-            description=REJECTION_RISK_CONFIG["description"],
-            instruction=REJECTION_RISK_CONFIG["instruction"],
-            generate_content_config=generate_config,
-        )
-
-        # Create Runner with in-memory session service
-        self.runner = Runner(
+        super().__init__(
+            agent_config=REJECTION_RISK_CONFIG,
             app_name="RejectionRiskAnalyzer",
-            agent=self.agent,
-            session_service=InMemorySessionService(),
+            session_id_prefix="rejection_analysis",
+            api_key=api_key,
         )
 
     def analyze_rejection_risk(
@@ -100,36 +71,8 @@ class RejectionRiskAgent:
             patient_context=patient_context,
         )
 
-        # Invoke agent using Runner with proper session context
-        async def _run_agent():
-            response_text = ""
-            user_message = types.Content(role="user", parts=[types.Part(text=prompt)])
-
-            # Create session if it doesn't exist
-            session = await self.runner.session_service.get_session(  # type: ignore[attr-defined]
-                app_name=self.runner.app_name,  # type: ignore[attr-defined]
-                user_id="system",
-                session_id="rejection_analysis",
-            )
-            if not session:
-                await self.runner.session_service.create_session(  # type: ignore[attr-defined]
-                    app_name=self.runner.app_name,  # type: ignore[attr-defined]
-                    user_id="system",
-                    session_id="rejection_analysis",
-                )
-
-            async for event in self.runner.run_async(  # type: ignore[attr-defined]
-                user_id="system",
-                session_id="rejection_analysis",
-                new_message=user_message,
-            ):
-                if hasattr(event, "content") and event.content and event.content.parts:
-                    for part in event.content.parts:
-                        if part.text:
-                            response_text += part.text
-            return response_text
-
-        response = asyncio.run(_run_agent())
+        # Invoke agent using base class method
+        response = self._invoke_agent(prompt)
 
         # Parse agent response
         return self._parse_agent_response(response)
