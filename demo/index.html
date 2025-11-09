@@ -612,6 +612,21 @@
                 `;
             }
 
+            // Show SRTR data source if present
+            const srtrDataSource = parsedRecommendation?.srtr_data_source;
+            if (srtrDataSource) {
+                html += `
+                    <div style="background: #e6f7ff; padding: 15px; border-radius: 8px; margin-top: 20px; border-left: 4px solid #1890ff;">
+                        <h4 style="margin-top: 0;">📊 Real Clinical Data Source (SRTR 2023)</h4>
+                        <p style="margin: 5px 0;"><strong>Source:</strong> ${srtrDataSource.source}</p>
+                        <p style="margin: 5px 0;"><strong>Organ:</strong> ${srtrDataSource.organ}</p>
+                        <p style="margin: 5px 0;"><strong>Age Group:</strong> ${srtrDataSource.age_group}</p>
+                        <p style="margin: 5px 0;"><strong>Baseline Rejection Rate:</strong> ${(srtrDataSource.baseline_rejection_rate * 100).toFixed(2)}%</p>
+                        <p style="margin: 5px 0;"><strong>Total Records in Database:</strong> ${srtrDataSource.total_records.toLocaleString()} ${srtrDataSource.organ.toLowerCase()} transplant recipients</p>
+                    </div>
+                `;
+            }
+
             // Show confidence level
             const confidence = parsedRecommendation?.confidence || data.confidence;
             if (confidence) {
