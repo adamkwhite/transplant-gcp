@@ -12,11 +12,6 @@ license = {text = "MIT"}
 authors = [
     {name = "Adam", email = "adam@example.com"}
 ]
-
-[tool.setuptools.packages.find]
-where = ["."]
-include = ["services*"]
-exclude = ["tests*", "scripts*"]
 keywords = ["ai", "adk", "google-adk", "transplant", "medication", "healthcare", "multi-agent"]
 classifiers = [
     "Development Status :: 4 - Beta",
@@ -44,6 +39,11 @@ Homepage = "https://github.com/adam/transplant-gcp"
 Documentation = "https://github.com/adam/transplant-gcp"
 Repository = "https://github.com/adam/transplant-gcp"
 Issues = "https://github.com/adam/transplant-gcp/issues"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["services*"]
+exclude = ["tests*", "scripts*"]
 
 # === RUFF CONFIGURATION ===
 [tool.ruff]
