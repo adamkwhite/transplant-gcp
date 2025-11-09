@@ -19,11 +19,17 @@ gcloud config set project $PROJECT_ID
 echo ""
 echo "📦 Preparing deployment..."
 
-# Copy ADK agents and config to service directory for Docker build
-echo "  → Copying ADK agents and config..."
+# Copy ADK agents, config, and SRTR data to service directory for Docker build
+echo "  → Copying ADK agents, config, and SRTR data..."
 mkdir -p services/missed-dose/services/
 cp -r services/agents services/missed-dose/services/
 cp -r services/config services/missed-dose/services/
+cp -r services/data services/missed-dose/services/
+
+# Copy SRTR processed data
+echo "  → Copying SRTR data files..."
+mkdir -p services/missed-dose/data/srtr/
+cp -r data/srtr/processed services/missed-dose/data/srtr/ 2>/dev/null || echo "  ⚠️  SRTR data not found - deployment will work without real data"
 
 # Deploy to Cloud Run
 echo "🔨 Building and deploying to Cloud Run with ADK agents..."
@@ -46,6 +52,11 @@ gcloud run deploy $SERVICE_NAME \
 
 # Get the service URL
 SERVICE_URL=$(gcloud run services describe $SERVICE_NAME --region=$REGION --format='value(status.url)')
+
+# Cleanup copied files
+echo ""
+echo "🧹 Cleaning up temporary files..."
+rm -rf services/missed-dose/services/ services/missed-dose/data/
 
 echo ""
 echo "✅ Deployment Complete!"

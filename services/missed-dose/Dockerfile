@@ -57,6 +57,10 @@ COPY main.py .
 # (deploy.sh will copy these before build)
 COPY services/ ./services/
 
+# Copy SRTR data files
+# (deploy.sh will copy these before build)
+COPY data/ ./data/
+
 # Set environment variables
 ENV PORT=8080
 ENV PYTHONUNBUFFERED=1

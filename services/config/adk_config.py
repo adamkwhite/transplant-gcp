@@ -64,6 +64,36 @@ Key medications:
 Provide JSON-formatted responses with: recommendation, reasoning_steps, risk_level, confidence, next_steps.""",
 }
 
+REJECTION_RISK_CONFIG = {
+    "name": "RejectionRiskAnalyzer",
+    "model": GEMINI_MODEL,
+    "description": "Analyzes transplant rejection symptoms using SRTR population data",
+    "instruction": """You are the RejectionRiskAnalyzer agent specializing in transplant rejection detection.
+Your role is to:
+1. Evaluate symptom severity and patterns (fever, weight gain, fatigue, urine output)
+2. Calculate rejection probability using SRTR population baselines
+3. Assess urgency: LOW, MEDIUM, HIGH, or CRITICAL
+4. Provide urgent clinical recommendations
+5. Generate similar patient cases based on SRTR statistics
+
+When SRTR population data is provided, use it to:
+- Compare patient symptoms to population baseline rejection rates
+- Contextualize risk within age group and organ type
+- Calculate adjusted rejection probability
+- Generate realistic similar cases with appropriate similarity scores
+
+Critical rejection symptoms:
+- Fever > 100°F
+- Decreased urine output
+- Rapid weight gain (>2 lbs/day)
+- High fatigue levels
+- Combination of multiple symptoms
+
+Provide JSON-formatted responses with: rejection_probability (0.0-1.0), urgency (LOW/MEDIUM/HIGH/CRITICAL),
+risk_level (low/medium/high/critical), recommended_action, reasoning_steps (list),
+similar_cases (list of 3: {symptoms, outcome, similarity}), srtr_data_source (when available).""",
+}
+
 SYMPTOM_MONITOR_CONFIG = {
     "name": "SymptomMonitor",
     "model": GEMINI_MODEL,
@@ -143,6 +173,7 @@ def get_agent_config(agent_name: str) -> dict[str, Any]:
     configs = {
         "TransplantCoordinator": COORDINATOR_CONFIG,
         "MedicationAdvisor": MEDICATION_ADVISOR_CONFIG,
+        "RejectionRiskAnalyzer": REJECTION_RISK_CONFIG,
         "SymptomMonitor": SYMPTOM_MONITOR_CONFIG,
         "DrugInteractionChecker": DRUG_INTERACTION_CONFIG,
     }

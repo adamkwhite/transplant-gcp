@@ -22,8 +22,8 @@ def _async_generator_mock(text: str):
 class TestMedicationAdvisorAgent:
     """Test suite for MedicationAdvisorAgent."""
 
-    @patch("services.agents.medication_advisor_agent.Agent")
-    @patch("services.agents.medication_advisor_agent.types")
+    @patch("services.agents.base_adk_agent.Agent")
+    @patch("services.agents.base_adk_agent.types")
     def test_init_creates_agent_with_correct_config(
         self, mock_types: MagicMock, mock_agent_class: MagicMock
     ) -> None:
@@ -46,8 +46,8 @@ class TestMedicationAdvisorAgent:
             generate_content_config=mock_generate_config,
         )
 
-    @patch("services.agents.medication_advisor_agent.Agent")
-    @patch("services.agents.medication_advisor_agent.types")
+    @patch("services.agents.base_adk_agent.Agent")
+    @patch("services.agents.base_adk_agent.types")
     def test_init_uses_default_api_key(
         self, mock_types: MagicMock, mock_agent_class: MagicMock
     ) -> None:
@@ -59,9 +59,9 @@ class TestMedicationAdvisorAgent:
         assert agent.api_key is not None
 
     @patch("services.agents.medication_advisor_agent.get_srtr_data")
-    @patch("services.agents.medication_advisor_agent.Runner")
-    @patch("services.agents.medication_advisor_agent.Agent")
-    @patch("services.agents.medication_advisor_agent.types")
+    @patch("services.agents.base_adk_agent.Runner")
+    @patch("services.agents.base_adk_agent.Agent")
+    @patch("services.agents.base_adk_agent.types")
     def test_analyze_missed_dose_calls_agent(
         self,
         mock_types: MagicMock,
@@ -112,9 +112,9 @@ class TestMedicationAdvisorAgent:
         assert "next_steps" in result
         assert "agent_name" in result
 
-    @patch("services.agents.medication_advisor_agent.Runner")
-    @patch("services.agents.medication_advisor_agent.Agent")
-    @patch("services.agents.medication_advisor_agent.types")
+    @patch("services.agents.base_adk_agent.Runner")
+    @patch("services.agents.base_adk_agent.Agent")
+    @patch("services.agents.base_adk_agent.types")
     def test_analyze_missed_dose_without_optional_params(
         self, mock_types: MagicMock, mock_agent_class: MagicMock, mock_runner_class: MagicMock
     ) -> None:
@@ -150,8 +150,8 @@ class TestMedicationAdvisorAgent:
         """Test therapeutic window for tacrolimus."""
         # Arrange
         with (
-            patch("services.agents.medication_advisor_agent.Agent"),
-            patch("services.agents.medication_advisor_agent.types"),
+            patch("services.agents.base_adk_agent.Agent"),
+            patch("services.agents.base_adk_agent.types"),
         ):
             agent = MedicationAdvisorAgent(api_key="test_key")
 
@@ -167,8 +167,8 @@ class TestMedicationAdvisorAgent:
         """Test therapeutic window for mycophenolate."""
         # Arrange
         with (
-            patch("services.agents.medication_advisor_agent.Agent"),
-            patch("services.agents.medication_advisor_agent.types"),
+            patch("services.agents.base_adk_agent.Agent"),
+            patch("services.agents.base_adk_agent.types"),
         ):
             agent = MedicationAdvisorAgent(api_key="test_key")
 
@@ -184,8 +184,8 @@ class TestMedicationAdvisorAgent:
         """Test therapeutic window for prednisone."""
         # Arrange
         with (
-            patch("services.agents.medication_advisor_agent.Agent"),
-            patch("services.agents.medication_advisor_agent.types"),
+            patch("services.agents.base_adk_agent.Agent"),
+            patch("services.agents.base_adk_agent.types"),
         ):
             agent = MedicationAdvisorAgent(api_key="test_key")
 
@@ -201,8 +201,8 @@ class TestMedicationAdvisorAgent:
         """Test therapeutic window for unknown medication returns default."""
         # Arrange
         with (
-            patch("services.agents.medication_advisor_agent.Agent"),
-            patch("services.agents.medication_advisor_agent.types"),
+            patch("services.agents.base_adk_agent.Agent"),
+            patch("services.agents.base_adk_agent.types"),
         ):
             agent = MedicationAdvisorAgent(api_key="test_key")
 
@@ -218,8 +218,8 @@ class TestMedicationAdvisorAgent:
         """Test that medication names are case-insensitive."""
         # Arrange
         with (
-            patch("services.agents.medication_advisor_agent.Agent"),
-            patch("services.agents.medication_advisor_agent.types"),
+            patch("services.agents.base_adk_agent.Agent"),
+            patch("services.agents.base_adk_agent.types"),
         ):
             agent = MedicationAdvisorAgent(api_key="test_key")
 
@@ -233,8 +233,8 @@ class TestMedicationAdvisorAgent:
         assert window1["window_hours"] == 12
 
     @patch("services.agents.medication_advisor_agent.get_srtr_data")
-    @patch("services.agents.medication_advisor_agent.Agent")
-    @patch("services.agents.medication_advisor_agent.types")
+    @patch("services.agents.base_adk_agent.Agent")
+    @patch("services.agents.base_adk_agent.types")
     def test_build_missed_dose_prompt_includes_all_params(
         self, mock_types: MagicMock, mock_agent_class: MagicMock, mock_get_srtr: MagicMock
     ) -> None:
@@ -267,8 +267,8 @@ class TestMedicationAdvisorAgent:
         assert "transplant_date" in prompt
         assert "JSON response" in prompt
 
-    @patch("services.agents.medication_advisor_agent.Agent")
-    @patch("services.agents.medication_advisor_agent.types")
+    @patch("services.agents.base_adk_agent.Agent")
+    @patch("services.agents.base_adk_agent.types")
     def test_parse_agent_response_returns_structured_format(
         self, mock_types: MagicMock, mock_agent_class: MagicMock
     ) -> None:
