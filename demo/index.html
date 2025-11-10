@@ -13,7 +13,7 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #4285f4 0%, #34a853 100%);
             min-height: 100vh;
             padding: 20px;
         }
@@ -57,7 +57,7 @@
         .patient-avatar {
             width: 80px;
             height: 80px;
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            background: linear-gradient(135deg, #4285f4, #34a853);
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -86,22 +86,22 @@
             flex: 1;
             padding: 15px;
             background: white;
-            border: 2px solid #667eea;
+            border: 2px solid #4285f4;
             border-radius: 10px;
             font-size: 1rem;
             font-weight: 600;
-            color: #667eea;
+            color: #4285f4;
             cursor: pointer;
             transition: all 0.3s;
         }
 
         .tab-button:hover {
-            background: #667eea;
+            background: #4285f4;
             color: white;
         }
 
         .tab-button.active {
-            background: #667eea;
+            background: #4285f4;
             color: white;
         }
 
@@ -139,11 +139,11 @@
 
         .form-group input:focus, .form-group select:focus {
             outline: none;
-            border-color: #667eea;
+            border-color: #4285f4;
         }
 
         .btn {
-            background: #667eea;
+            background: #4285f4;
             color: white;
             border: none;
             padding: 15px 30px;
@@ -155,9 +155,9 @@
         }
 
         .btn:hover {
-            background: #5a67d8;
+            background: #1967d2;
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 5px 15px rgba(66, 133, 244, 0.4);
         }
 
         .btn-danger {
@@ -173,7 +173,7 @@
             padding: 25px;
             background: #f7fafc;
             border-radius: 10px;
-            border-left: 5px solid #667eea;
+            border-left: 5px solid #4285f4;
             display: none;
         }
 
@@ -198,7 +198,7 @@
             padding: 10px;
             margin: 5px 0;
             background: #f7fafc;
-            border-left: 3px solid #667eea;
+            border-left: 3px solid #4285f4;
             border-radius: 4px;
         }
 
@@ -275,7 +275,7 @@
 
         .spinner {
             border: 4px solid #f3f3f3;
-            border-top: 4px solid #667eea;
+            border-top: 4px solid #4285f4;
             border-radius: 50%;
             width: 40px;
             height: 40px;
@@ -291,7 +291,7 @@
         .badge {
             display: inline-block;
             padding: 5px 10px;
-            background: #667eea;
+            background: #4285f4;
             color: white;
             border-radius: 20px;
             font-size: 0.85rem;
@@ -318,8 +318,8 @@
     <div class="container">
         <!-- Header -->
         <div class="header">
-            <h1>🏥 Transplant Medication Adherence Agent</h1>
-            <p>AI-Powered Clinical Decision Support | Google Gemini 2.0 + Cloud Run</p>
+            <h1>🏥 TransplantGuard AI</h1>
+            <p>Multi-Agent AI System | Google ADK + Gemini 2.0 Flash + Cloud Run</p>
         </div>
 
         <!-- Patient Card -->
@@ -514,8 +514,8 @@
         // Missed Dose API is live on Google Cloud Run
         // Rejection Risk and Drug Interaction APIs use mock data (coming soon)
 
-        const API_BASE = 'https://missed-dose-service-64rz4skmdq-uc.a.run.app';
-        const USE_MOCK = true; // Set to false when all APIs are deployed
+        const API_BASE = 'https://missed-dose-service-978611421547.us-central1.run.app';
+        const USE_MOCK = false; // All APIs are now deployed!
 
         function showTab(tabName) {
             // Hide all sections
@@ -551,7 +551,7 @@
 
             try {
                 // Call Cloud Run API with patient context for SRTR data
-                const response = await fetch('https://missed-dose-service-64rz4skmdq-uc.a.run.app/medications/missed-dose', {
+                const response = await fetch('https://missed-dose-service-978611421547.us-central1.run.app/medications/missed-dose', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -693,7 +693,7 @@
 
             try {
                 // Call real Cloud Run API
-                const response = await fetch('https://missed-dose-service-64rz4skmdq-uc.a.run.app/rejection/analyze', {
+                const response = await fetch('https://missed-dose-service-978611421547.us-central1.run.app/rejection/analyze', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
