@@ -269,3 +269,6 @@ logs/parse_*.log
 
 # Netlify deployment
 .netlify/
+
+# SRTR data files (too large for git, deployed via Docker)
+services/missed-dose/data/srtr/

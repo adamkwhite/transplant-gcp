@@ -53,6 +53,10 @@ RUN pip install --no-cache-dir --no-deps google-adk==1.17.0 && \
 # Copy service files
 COPY main.py .
 
+# Copy templates and static files for web interface
+COPY templates/ ./templates/
+COPY static/ ./static/
+
 # Copy ADK agents and config from parent directory
 # (deploy.sh will copy these before build)
 COPY services/ ./services/

@@ -8,7 +8,7 @@ import os
 import sys
 from datetime import datetime, timedelta
 
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, render_template, request
 from flask_cors import CORS
 from google.cloud import firestore
 from werkzeug.exceptions import BadRequest
@@ -423,15 +423,8 @@ def analyze_rejection_risk():
 
 @app.route("/", methods=["GET"])
 def index():
-    """Root endpoint"""
-    return jsonify(
-        {
-            "service": "Transplant Medication Adherence - Missed Dose Analysis",
-            "version": "1.0",
-            "platform": PLATFORM_NAME,
-            "endpoints": ["/health", "/medications/missed-dose", "/rejection/analyze"],
-        }
-    )
+    """Root endpoint - Landing page"""
+    return render_template("index.html")
 
 
 if __name__ == "__main__":

@@ -27,7 +27,8 @@
       "Bash(tee:*)",
       "Bash(curl:*)",
       "Bash(gcloud run services logs read:*)",
-      "Bash(gcloud run services update:*)"
+      "Bash(gcloud run services update:*)",
+      "Bash(npx -p @mermaid-js/mermaid-cli mmdc:*)"
     ],
     "deny": [],
     "ask": []
