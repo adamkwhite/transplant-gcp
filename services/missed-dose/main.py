@@ -271,8 +271,19 @@ def missed_dose():
                 200,
             )
 
-        # Get patient context
-        patient_context = get_patient_context(patient_id)
+        # Get patient context - use request data if provided, otherwise look up from Firestore
+        request_context = data.get("patient_context", {})
+
+        if request_context:
+            # Use context from request (e.g., from web demo with organ selection)
+            patient_context = request_context.copy()
+            # Map organ_type to transplant_type for consistency
+            if "organ_type" in patient_context:
+                patient_context["transplant_type"] = patient_context.pop("organ_type")
+        else:
+            # Look up from Firestore
+            patient_context = get_patient_context(patient_id)
+
         adherence_rate, missed_this_week = calculate_adherence(patient_id)
 
         patient_context.update(
