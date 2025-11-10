@@ -1,0 +1,28 @@
+# Netlify Configuration for TransplantGuard AI Demo
+# Google Cloud Run Hackathon 2025
+
+[build]
+  # Publish the demo directory containing index.html
+  publish = "demo"
+
+  # No build command needed - static HTML/CSS/JS
+  command = ""
+
+[build.environment]
+  # Environment variables (if needed)
+
+[[headers]]
+  # Apply security headers to all routes
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-XSS-Protection = "1; mode=block"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+
+# Redirect /api/* to Cloud Run backend (if needed)
+[[redirects]]
+  from = "/api/*"
+  to = "https://missed-dose-service-978611421547.us-central1.run.app/:splat"
+  status = 200
+  force = true
