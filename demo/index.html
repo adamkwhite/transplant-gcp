@@ -612,14 +612,14 @@
             html += '</div>';
 
             // Show recommendation
-            const recommendationText = parsedRecommendation?.recommendation || data.recommendation;
+            const recommendationText = parsedRecommendation?.recommendation || data.recommendation || 'No recommendation available';
             const riskLevel = parsedRecommendation?.risk_level || data.risk_level || 'medium';
             const alertClass = riskLevel.toLowerCase() === 'high' || riskLevel.toLowerCase() === 'critical'
                 ? 'alert-danger'
                 : riskLevel.toLowerCase() === 'medium'
                     ? 'alert-warning'
                     : 'alert-success';
-            html += `<div class="recommendation ${alertClass}">${recommendationText.toUpperCase()}</div>`;
+            html += `<div class="recommendation ${alertClass}">${recommendationText}</div>`;
 
             // Show next steps
             const nextSteps = parsedRecommendation?.next_steps || data.next_steps || [];
