@@ -112,13 +112,23 @@
 
         <section class="cta-section">
             <h3>Try It Out</h3>
-            <p>Test the live API endpoints with curl or your favorite HTTP client</p>
+            <p>Test the AI-powered medication analysis - copy this command to see the multi-agent system in action:</p>
             <div class="code-block">
-                <code>curl {{ request.host_url }}health</code>
+                <code style="font-size: 0.75rem; line-height: 1.5; display: block; white-space: pre;">curl -X POST {{ request.host_url }}medications/missed-dose \
+  -H "Content-Type: application/json" \
+  -d '{
+    "medication": "tacrolimus",
+    "scheduled_time": "8:00 AM",
+    "current_time": "2:00 PM",
+    "patient_id": "demo_patient"
+  }'</code>
             </div>
+            <p style="margin-top: 1rem; font-size: 0.9rem; color: #5f6368;">
+                Response includes: AI reasoning chain • Medical recommendation • Risk assessment • SRTR data citations • Next clinical steps
+            </p>
             <div class="button-group">
-                <a href="/health" class="button primary">View Health Status</a>
-                <a href="https://github.com/[your-repo]" class="button secondary" target="_blank">View on GitHub</a>
+                <a href="/health" class="button secondary">View System Health</a>
+                <a href="https://github.com/adamkwhite/transplant-gcp" class="button primary" target="_blank">View on GitHub</a>
             </div>
         </section>
 

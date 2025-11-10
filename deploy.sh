@@ -37,8 +37,17 @@ echo "This will build the container and deploy in one step..."
 
 cd services/missed-dose
 
+# Load GEMINI_API_KEY from .env file
+if [ -f "../../.env" ]; then
+    export $(grep GEMINI_API_KEY ../../.env | xargs)
+    echo "  → Loaded GEMINI_API_KEY from .env"
+elif [ -z "$GEMINI_API_KEY" ]; then
+    echo "  ⚠️  WARNING: GEMINI_API_KEY not set - API calls will fail!"
+    echo "  → Set it in .env file or export GEMINI_API_KEY=your-key"
+fi
+
 # Deploy with source (builds automatically)
-# Increased memory for ADK agents (4 agents + coordinator = ~1GB recommended)
+# Increased memory for ADK agents (5 agents + coordinator = ~1GB recommended)
 gcloud run deploy $SERVICE_NAME \
     --source . \
     --region $REGION \
@@ -47,7 +56,7 @@ gcloud run deploy $SERVICE_NAME \
     --cpu 2 \
     --timeout 300 \
     --max-instances 10 \
-    --set-env-vars="GOOGLE_CLOUD_PROJECT=$PROJECT_ID" \
+    --set-env-vars="GOOGLE_CLOUD_PROJECT=$PROJECT_ID,GEMINI_API_KEY=$GEMINI_API_KEY" \
     --platform managed
 
 # Get the service URL
