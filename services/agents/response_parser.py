@@ -9,6 +9,72 @@ import json
 from typing import Any
 
 
+def _try_parse_json_dict(text: str) -> dict[str, Any] | None:
+    """Try to parse text as JSON dict, return None if fails."""
+    try:
+        parsed = json.loads(text)
+        if isinstance(parsed, dict):
+            return parsed
+    except json.JSONDecodeError:
+        pass
+    return None
+
+
+def _extract_code_block(text: str, marker: str) -> str | None:
+    """Extract content between marker and closing ```."""
+    start = text.find(marker)
+    if start == -1:
+        return None
+
+    content_start = start + len(marker)
+    # Skip whitespace
+    while content_start < len(text) and text[content_start].isspace():
+        content_start += 1
+
+    # Find closing ```
+    content_end = text.find("```", content_start)
+    if content_end == -1:
+        return None
+
+    return text[content_start:content_end]
+
+
+def _find_json_object(text: str) -> str | None:
+    """Find first complete JSON object by counting braces."""
+    brace_index = text.find("{")
+    if brace_index == -1:
+        return None
+
+    depth = 0
+    in_string = False
+    escape_next = False
+
+    for i in range(brace_index, len(text)):
+        char = text[i]
+
+        if escape_next:
+            escape_next = False
+            continue
+
+        if char == "\\":
+            escape_next = True
+            continue
+
+        if char == '"':
+            in_string = not in_string
+            continue
+
+        if not in_string:
+            if char == "{":
+                depth += 1
+            elif char == "}":
+                depth -= 1
+                if depth == 0:
+                    return text[brace_index : i + 1]
+
+    return None
+
+
 def extract_json_from_response(response_text: str) -> dict[str, Any] | None:
     """
     Extract and parse JSON from an AI response.
@@ -25,82 +91,25 @@ def extract_json_from_response(response_text: str) -> dict[str, Any] | None:
     if not response_text:
         return None
 
-    # Try to extract JSON from markdown code blocks
-    # Pattern 1: ```json ... ``` - match JSON in code block
-    # Use string operations instead of regex to avoid backtracking
-    json_start = response_text.find("```json")
-    if json_start != -1:
-        content_start = json_start + 7  # len("```json")
-        # Skip whitespace after ```json
-        while content_start < len(response_text) and response_text[content_start].isspace():
-            content_start += 1
-        # Find closing ```
-        content_end = response_text.find("```", content_start)
-        if content_end != -1:
-            try:
-                parsed = json.loads(response_text[content_start:content_end])
-                if isinstance(parsed, dict):
-                    return parsed
-            except json.JSONDecodeError:
-                pass
+    # Try ```json ... ``` code block
+    content = _extract_code_block(response_text, "```json")
+    if content:
+        result = _try_parse_json_dict(content)
+        if result:
+            return result
 
-    # Pattern 2: ``` ... ``` (without json tag)
-    # Use string operations instead of regex to avoid backtracking
-    code_start = response_text.find("```")
-    if code_start != -1:
-        content_start = code_start + 3  # len("```")
-        # Skip whitespace after ```
-        while content_start < len(response_text) and response_text[content_start].isspace():
-            content_start += 1
-        # Find closing ```
-        content_end = response_text.find("```", content_start)
-        if content_end != -1:
-            try:
-                parsed = json.loads(response_text[content_start:content_end])
-                if isinstance(parsed, dict):
-                    return parsed
-            except json.JSONDecodeError:
-                pass
+    # Try ``` ... ``` code block
+    content = _extract_code_block(response_text, "```")
+    if content:
+        result = _try_parse_json_dict(content)
+        if result:
+            return result
 
-    # Pattern 3: Raw JSON object anywhere in text
-    # Find first '{' and use brace counting to find matching '}'
-    # This avoids regex backtracking issues entirely
-    brace_index = response_text.find("{")
-    if brace_index != -1:
-        # Count braces to find matching closing brace
-        depth = 0
-        in_string = False
-        escape_next = False
-
-        for i in range(brace_index, len(response_text)):
-            char = response_text[i]
-
-            if escape_next:
-                escape_next = False
-                continue
-
-            if char == "\\":
-                escape_next = True
-                continue
-
-            if char == '"' and not escape_next:
-                in_string = not in_string
-                continue
-
-            if not in_string:
-                if char == "{":
-                    depth += 1
-                elif char == "}":
-                    depth -= 1
-                    if depth == 0:
-                        # Found matching closing brace
-                        try:
-                            candidate = response_text[brace_index : i + 1]
-                            parsed = json.loads(candidate)
-                            if isinstance(parsed, dict):
-                                return parsed
-                        except json.JSONDecodeError:
-                            pass
-                        break
+    # Try raw JSON object
+    content = _find_json_object(response_text)
+    if content:
+        result = _try_parse_json_dict(content)
+        if result:
+            return result
 
     return None
