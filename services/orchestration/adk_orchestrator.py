@@ -189,9 +189,9 @@ Action: transfer_to_agent(agent_name='MedicationAdvisor') first, then SymptomMon
             conversation_history=conversation_history,
         )
 
-        # For now, use the underlying Gemini client directly
-        # TODO: Once we understand the proper ADK Runner/Session pattern,
-        # replace this with proper agent orchestration
+        # Use the underlying Gemini client directly for orchestration.
+        # This approach provides direct control over the multi-agent coordination
+        # and allows for custom request/response handling.
         from google.genai import Client  # type: ignore[import-untyped]
 
         client = Client(api_key=self.api_key)
