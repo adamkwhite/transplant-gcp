@@ -6,7 +6,6 @@ standardized parsing logic to extract structured data from those responses.
 """
 
 import json
-import re
 from typing import Any
 
 
@@ -28,26 +27,40 @@ def extract_json_from_response(response_text: str) -> dict[str, Any] | None:
 
     # Try to extract JSON from markdown code blocks
     # Pattern 1: ```json ... ``` - match JSON in code block
-    # Use [^`]+ to match non-backtick characters, preventing catastrophic backtracking
-    json_match = re.search(r"```json\s*([^`]+)```", response_text)
-    if json_match:
-        try:
-            parsed = json.loads(json_match.group(1))
-            if isinstance(parsed, dict):
-                return parsed
-        except json.JSONDecodeError:
-            pass
+    # Use string operations instead of regex to avoid backtracking
+    json_start = response_text.find("```json")
+    if json_start != -1:
+        content_start = json_start + 7  # len("```json")
+        # Skip whitespace after ```json
+        while content_start < len(response_text) and response_text[content_start].isspace():
+            content_start += 1
+        # Find closing ```
+        content_end = response_text.find("```", content_start)
+        if content_end != -1:
+            try:
+                parsed = json.loads(response_text[content_start:content_end])
+                if isinstance(parsed, dict):
+                    return parsed
+            except json.JSONDecodeError:
+                pass
 
     # Pattern 2: ``` ... ``` (without json tag)
-    # Use [^`]+ to match non-backtick characters, preventing catastrophic backtracking
-    json_match = re.search(r"```\s*([^`]+)```", response_text)
-    if json_match:
-        try:
-            parsed = json.loads(json_match.group(1))
-            if isinstance(parsed, dict):
-                return parsed
-        except json.JSONDecodeError:
-            pass
+    # Use string operations instead of regex to avoid backtracking
+    code_start = response_text.find("```")
+    if code_start != -1:
+        content_start = code_start + 3  # len("```")
+        # Skip whitespace after ```
+        while content_start < len(response_text) and response_text[content_start].isspace():
+            content_start += 1
+        # Find closing ```
+        content_end = response_text.find("```", content_start)
+        if content_end != -1:
+            try:
+                parsed = json.loads(response_text[content_start:content_end])
+                if isinstance(parsed, dict):
+                    return parsed
+            except json.JSONDecodeError:
+                pass
 
     # Pattern 3: Raw JSON object anywhere in text
     # Find first '{' and use brace counting to find matching '}'
