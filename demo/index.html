@@ -716,9 +716,19 @@
                 let parsedData = data;
                 if (data.reasoning_steps && data.reasoning_steps.length > 0) {
                     const firstStep = data.reasoning_steps[0];
-                    if (firstStep.includes('```json')) {
+                    if (firstStep.includes('```json') || firstStep.includes('{')) {
                         try {
-                            const jsonMatch = firstStep.match(/```json\n([\s\S]*?)\n```/);
+                            // Try to extract JSON from markdown code blocks (with or without extra text)
+                            let jsonMatch = firstStep.match(/```json\s*([\s\S]*?)\s*```/);
+                            if (!jsonMatch) {
+                                // Try without the json tag
+                                jsonMatch = firstStep.match(/```\s*([\s\S]*?)\s*```/);
+                            }
+                            if (!jsonMatch) {
+                                // Try to find raw JSON object
+                                jsonMatch = firstStep.match(/(\{[\s\S]*\})/);
+                            }
+
                             if (jsonMatch) {
                                 const parsed = JSON.parse(jsonMatch[1]);
                                 // Override with parsed data
