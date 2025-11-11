@@ -712,15 +712,42 @@
                 const data = await response.json();
 
                 // Transform API response to match display format
+                // Parse JSON from reasoning_steps if it contains JSON
+                let parsedData = data;
+                if (data.reasoning_steps && data.reasoning_steps.length > 0) {
+                    const firstStep = data.reasoning_steps[0];
+                    if (firstStep.includes('```json')) {
+                        try {
+                            const jsonMatch = firstStep.match(/```json\n([\s\S]*?)\n```/);
+                            if (jsonMatch) {
+                                const parsed = JSON.parse(jsonMatch[1]);
+                                // Override with parsed data
+                                parsedData = {
+                                    ...data,
+                                    rejection_probability: parsed.rejection_probability,
+                                    urgency: parsed.urgency,
+                                    risk_level: parsed.risk_level,
+                                    recommended_action: parsed.recommended_action,
+                                    reasoning_steps: parsed.reasoning_steps || [],
+                                    similar_cases: parsed.similar_cases || [],
+                                    srtr_data_source: parsed.srtr_data_source || data.srtr_data_source
+                                };
+                            }
+                        } catch (e) {
+                            console.error('Failed to parse reasoning_steps JSON:', e);
+                        }
+                    }
+                }
+
                 const displayData = {
                     query_symptoms: `fever ${symptoms.fever}F, weight gain ${symptoms.weight_gain} lbs, fatigue ${symptoms.fatigue}, urine output ${symptoms.urine_output}`,
-                    rejection_probability: `${(data.rejection_probability * 100).toFixed(0)}%`,
-                    urgency: data.urgency,
-                    risk_level: data.risk_level,
-                    recommended_action: data.recommended_action,
-                    reasoning_steps: data.reasoning_steps,
-                    top_similar_cases: data.similar_cases || [],
-                    srtr_data_source: data.srtr_data_source
+                    rejection_probability: `${(parsedData.rejection_probability * 100).toFixed(0)}%`,
+                    urgency: parsedData.urgency,
+                    risk_level: parsedData.risk_level,
+                    recommended_action: parsedData.recommended_action,
+                    reasoning_steps: parsedData.reasoning_steps,
+                    top_similar_cases: parsedData.similar_cases || [],
+                    srtr_data_source: parsedData.srtr_data_source
                 };
 
                 displayRejectionResult(displayData);
