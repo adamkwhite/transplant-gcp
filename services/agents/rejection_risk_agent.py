@@ -11,6 +11,7 @@ Transplant Recipients) to provide population-based rejection risk scores.
 from typing import Any
 
 from services.agents.base_adk_agent import BaseADKAgent
+from services.agents.response_parser import extract_json_from_response
 from services.config.adk_config import REJECTION_RISK_CONFIG
 from services.data.srtr_outcomes import get_srtr_data
 
@@ -155,19 +156,35 @@ class RejectionRiskAgent(BaseADKAgent):
         Returns:
             Structured dict with rejection risk data
         """
-        # ADK returns agent response text from _invoke_agent()
-        # The response contains the full AI analysis
         response_text = str(response)
 
-        # Return the AI response text in reasoning_steps
-        # The frontend will display this directly
-        return {
-            "rejection_probability": 0.75,
-            "urgency": "HIGH",
-            "risk_level": "critical",
-            "recommended_action": "Contact transplant team IMMEDIATELY",
-            "reasoning_steps": [response_text],  # Full AI response shown to user
-            "similar_cases": [],
-            "agent_name": self.agent.name,
-            "raw_response": response_text,
-        }
+        # Try to extract and parse JSON from the response
+        parsed_json = extract_json_from_response(response_text)
+
+        if parsed_json:
+            # Use parsed values from AI (organ-specific, patient-specific)
+            return {
+                "rejection_probability": parsed_json.get("rejection_probability", 0.5),
+                "urgency": parsed_json.get("urgency", "MEDIUM"),
+                "risk_level": parsed_json.get("risk_level", "medium"),
+                "recommended_action": parsed_json.get(
+                    "recommended_action", "Monitor symptoms and contact team if worsens"
+                ),
+                "reasoning_steps": parsed_json.get("reasoning_steps", []),
+                "similar_cases": parsed_json.get("similar_cases", []),
+                "srtr_data_source": parsed_json.get("srtr_data_source"),
+                "agent_name": self.agent.name,
+                "raw_response": response_text,
+            }
+        else:
+            # Fallback if JSON parsing fails
+            return {
+                "rejection_probability": 0.5,
+                "urgency": "MEDIUM",
+                "risk_level": "medium",
+                "recommended_action": "Unable to parse AI response. Review full analysis and contact team.",
+                "reasoning_steps": [response_text],
+                "similar_cases": [],
+                "agent_name": self.agent.name,
+                "raw_response": response_text,
+            }

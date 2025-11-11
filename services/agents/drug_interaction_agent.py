@@ -8,6 +8,7 @@ drug-drug, drug-food, and drug-supplement interactions for transplant patients.
 from typing import Any
 
 from services.agents.base_adk_agent import BaseADKAgent
+from services.agents.response_parser import extract_json_from_response
 from services.config.adk_config import DRUG_INTERACTION_CONFIG
 
 
@@ -122,23 +123,66 @@ class DrugInteractionCheckerAgent(BaseADKAgent):
         Returns:
             Structured dict with interaction data
         """
-        # ADK returns agent response text
-        # The response contains the full AI analysis
         response_text = str(response)
 
-        # Return the AI response text in mechanism field
-        # The frontend will parse JSON if present
-        return {
-            "has_interaction": False,
-            "severity": "none",
-            "interactions": [],
-            "mechanism": response_text,  # Full AI response for frontend parsing
-            "clinical_effect": "No significant interactions detected",
-            "recommendation": "Continue current regimen as prescribed",
-            "confidence": 0.90,
-            "agent_name": self.agent.name,
-            "raw_response": response_text,
-        }
+        # Try to extract and parse JSON from the response
+        parsed_json = extract_json_from_response(response_text)
+
+        if parsed_json:
+            interactions = parsed_json.get("interactions", [])
+
+            # Determine severity: use top-level if present, otherwise get highest from interactions
+            severity = parsed_json.get("severity")
+            if not severity and interactions:
+                # Map severity levels to priority (higher = more severe)
+                severity_priority = {
+                    "contraindicated": 5,
+                    "severe": 4,
+                    "moderate": 3,
+                    "mild": 2,
+                    "none": 1,
+                }
+                highest = max(
+                    (i.get("severity", "none").lower() for i in interactions),
+                    key=lambda s: severity_priority.get(s, 0),
+                )
+                severity = highest
+            elif not severity:
+                severity = "none"
+
+            # Use first interaction's details if top-level fields missing
+            first_interaction = interactions[0] if interactions else {}
+
+            # Use parsed values from AI
+            return {
+                "has_interaction": parsed_json.get("has_interaction", False),
+                "severity": severity,
+                "interactions": interactions,
+                "mechanism": parsed_json.get("mechanism") or first_interaction.get("mechanism", ""),
+                "clinical_effect": parsed_json.get("clinical_effect")
+                or first_interaction.get("clinical_effect", "No significant interactions detected"),
+                "recommendation": parsed_json.get("recommendation")
+                or first_interaction.get(
+                    "recommendation", "Continue current regimen as prescribed"
+                ),
+                "confidence": parsed_json.get("confidence")
+                or first_interaction.get("confidence", 0.90),
+                "agent_name": self.agent.name,
+                "raw_response": response_text,
+            }
+        else:
+            # Fallback if JSON parsing fails
+            return {
+                "has_interaction": False,
+                "severity": "unknown",
+                "interactions": [],
+                "mechanism": response_text,
+                "clinical_effect": "Unable to parse AI response",
+                "recommendation": "Please review full analysis and consult pharmacist",
+                "confidence": 0.50,
+                "agent_name": self.agent.name,
+                "raw_response": response_text,
+            }
 
     def get_known_interactions_reference(self) -> dict[str, Any]:
         """

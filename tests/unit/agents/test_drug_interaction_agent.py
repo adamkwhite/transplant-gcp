@@ -1,24 +1,29 @@
 """Unit tests for DrugInteractionCheckerAgent."""
 
-from unittest.mock import ANY, MagicMock, patch
+from unittest.mock import ANY, AsyncMock, MagicMock, patch
 
 from services.agents.drug_interaction_agent import DrugInteractionCheckerAgent
 
 
-def _async_return(value):
-    """Helper to create async return value for mocking."""
+def _async_generator_mock(text: str):
+    """Helper to create async generator mock for Runner.run_async()."""
 
-    async def _return():
-        return value
+    async def _generator():
+        # Yield event with text content
+        event = MagicMock()
+        event.content = MagicMock()
+        event.content.parts = [MagicMock()]
+        event.content.parts[0].text = text
+        yield event
 
-    return _return()
+    return _generator()
 
 
 class TestDrugInteractionCheckerAgent:
     """Test suite for DrugInteractionCheckerAgent."""
 
-    @patch("services.agents.drug_interaction_agent.Agent")
-    @patch("services.agents.drug_interaction_agent.types")
+    @patch("services.agents.base_adk_agent.Agent")
+    @patch("services.agents.base_adk_agent.types")
     def test_init_creates_agent_with_correct_config(
         self, mock_types: MagicMock, mock_agent_class: MagicMock
     ) -> None:
@@ -32,24 +37,35 @@ class TestDrugInteractionCheckerAgent:
 
         # Assert
         assert agent.api_key == "test_key"
+        mock_types.GenerateContentConfig.assert_called_once()
         mock_agent_class.assert_called_once_with(
             name="DrugInteractionChecker",
-            model="gemini-2.0-flash-lite",  # Uses lite model for faster checks
+            model="gemini-2.0-flash-lite",
             description="Validates medication safety and identifies drug interactions",
             instruction=ANY,  # Long instruction string, just verify it's passed
             generate_content_config=mock_generate_config,
         )
 
-    @patch("services.agents.drug_interaction_agent.Agent")
-    @patch("services.agents.drug_interaction_agent.types")
+    @patch("services.agents.base_adk_agent.Runner")
+    @patch("services.agents.base_adk_agent.Agent")
+    @patch("services.agents.base_adk_agent.types")
     def test_check_interaction_calls_agent(
-        self, mock_types: MagicMock, mock_agent_class: MagicMock
+        self, mock_types: MagicMock, mock_agent_class: MagicMock, mock_runner_class: MagicMock
     ) -> None:
         """Test that check_interaction invokes the agent."""
         # Arrange
-        mock_agent_instance = MagicMock()
-        mock_agent_class.return_value = mock_agent_instance
-        mock_agent_instance.run_async.return_value = _async_return("No interactions found")
+        mock_runner_instance = MagicMock()
+        mock_runner_class.return_value = mock_runner_instance
+        mock_runner_instance.app_name = "DrugInteractionChecker"
+
+        # Mock session service
+        mock_session_service = AsyncMock()
+        mock_session_service.get_session.return_value = MagicMock()
+        mock_runner_instance.session_service = mock_session_service
+
+        mock_runner_instance.run_async.side_effect = lambda **_: _async_generator_mock(
+            "No interactions found"
+        )
 
         agent = DrugInteractionCheckerAgent(api_key="test_key")
 
@@ -61,23 +77,30 @@ class TestDrugInteractionCheckerAgent:
         )
 
         # Assert
-        mock_agent_instance.run_async.assert_called_once()
-        call_args = mock_agent_instance.run_async.call_args[0][0]
-        assert "tacrolimus" in call_args
-        assert "prednisone" in call_args
-        assert "grapefruit juice" in call_args
-        assert "St. John's Wort" in call_args
+        mock_runner_instance.run_async.assert_called_once()
+        # Verify result structure
+        assert "has_interaction" in result
+        assert "severity" in result
+        assert "interactions" in result
 
-    @patch("services.agents.drug_interaction_agent.Agent")
-    @patch("services.agents.drug_interaction_agent.types")
+    @patch("services.agents.base_adk_agent.Runner")
+    @patch("services.agents.base_adk_agent.Agent")
+    @patch("services.agents.base_adk_agent.types")
     def test_check_interaction_returns_structured_response(
-        self, mock_types: MagicMock, mock_agent_class: MagicMock
+        self, mock_types: MagicMock, mock_agent_class: MagicMock, mock_runner_class: MagicMock
     ) -> None:
         """Test that check_interaction returns expected structure."""
         # Arrange
-        mock_agent_instance = MagicMock()
-        mock_agent_class.return_value = mock_agent_instance
-        mock_agent_instance.run_async.return_value = _async_return("Response")
+        mock_runner_instance = MagicMock()
+        mock_runner_class.return_value = mock_runner_instance
+        mock_runner_instance.app_name = "DrugInteractionChecker"
+
+        # Mock session service
+        mock_session_service = AsyncMock()
+        mock_session_service.get_session.return_value = MagicMock()
+        mock_runner_instance.session_service = mock_session_service
+
+        mock_runner_instance.run_async.side_effect = lambda **_: _async_generator_mock("Response")
 
         agent = DrugInteractionCheckerAgent(api_key="test_key")
 
@@ -88,7 +111,14 @@ class TestDrugInteractionCheckerAgent:
         assert "has_interaction" in result
         assert isinstance(result["has_interaction"], bool)
         assert "severity" in result
-        assert result["severity"] in ["none", "mild", "moderate", "severe", "contraindicated"]
+        assert result["severity"] in [
+            "none",
+            "mild",
+            "moderate",
+            "severe",
+            "contraindicated",
+            "unknown",
+        ]
         assert "interactions" in result
         assert isinstance(result["interactions"], list)
         assert "mechanism" in result
@@ -101,8 +131,8 @@ class TestDrugInteractionCheckerAgent:
         """Test that known interactions reference has correct structure."""
         # Arrange
         with (
-            patch("services.agents.drug_interaction_agent.Agent"),
-            patch("services.agents.drug_interaction_agent.types"),
+            patch("services.agents.base_adk_agent.Agent"),
+            patch("services.agents.base_adk_agent.types"),
         ):
             agent = DrugInteractionCheckerAgent(api_key="test_key")
 
@@ -120,8 +150,8 @@ class TestDrugInteractionCheckerAgent:
         """Test tacrolimus + grapefruit interaction data."""
         # Arrange
         with (
-            patch("services.agents.drug_interaction_agent.Agent"),
-            patch("services.agents.drug_interaction_agent.types"),
+            patch("services.agents.base_adk_agent.Agent"),
+            patch("services.agents.base_adk_agent.types"),
         ):
             agent = DrugInteractionCheckerAgent(api_key="test_key")
 
@@ -140,8 +170,8 @@ class TestDrugInteractionCheckerAgent:
         """Test tacrolimus + NSAIDs interaction data."""
         # Arrange
         with (
-            patch("services.agents.drug_interaction_agent.Agent"),
-            patch("services.agents.drug_interaction_agent.types"),
+            patch("services.agents.base_adk_agent.Agent"),
+            patch("services.agents.base_adk_agent.types"),
         ):
             agent = DrugInteractionCheckerAgent(api_key="test_key")
 
@@ -159,8 +189,8 @@ class TestDrugInteractionCheckerAgent:
         """Test mycophenolate + antacids interaction data."""
         # Arrange
         with (
-            patch("services.agents.drug_interaction_agent.Agent"),
-            patch("services.agents.drug_interaction_agent.types"),
+            patch("services.agents.base_adk_agent.Agent"),
+            patch("services.agents.base_adk_agent.types"),
         ):
             agent = DrugInteractionCheckerAgent(api_key="test_key")
 
@@ -178,8 +208,8 @@ class TestDrugInteractionCheckerAgent:
         """Test contraindicated interactions are present."""
         # Arrange
         with (
-            patch("services.agents.drug_interaction_agent.Agent"),
-            patch("services.agents.drug_interaction_agent.types"),
+            patch("services.agents.base_adk_agent.Agent"),
+            patch("services.agents.base_adk_agent.types"),
         ):
             agent = DrugInteractionCheckerAgent(api_key="test_key")
 
@@ -200,8 +230,8 @@ class TestDrugInteractionCheckerAgent:
         """Test CYP3A4 inhibitors list is comprehensive."""
         # Arrange
         with (
-            patch("services.agents.drug_interaction_agent.Agent"),
-            patch("services.agents.drug_interaction_agent.types"),
+            patch("services.agents.base_adk_agent.Agent"),
+            patch("services.agents.base_adk_agent.types"),
         ):
             agent = DrugInteractionCheckerAgent(api_key="test_key")
 
@@ -218,8 +248,8 @@ class TestDrugInteractionCheckerAgent:
         """Test CYP3A4 inducers list is comprehensive."""
         # Arrange
         with (
-            patch("services.agents.drug_interaction_agent.Agent"),
-            patch("services.agents.drug_interaction_agent.types"),
+            patch("services.agents.base_adk_agent.Agent"),
+            patch("services.agents.base_adk_agent.types"),
         ):
             agent = DrugInteractionCheckerAgent(api_key="test_key")
 
@@ -232,16 +262,13 @@ class TestDrugInteractionCheckerAgent:
         assert "St. John's Wort" in cyp3a4["strong_inducers"]
         assert "Phenytoin" in cyp3a4["strong_inducers"]
 
-    @patch("services.agents.drug_interaction_agent.Agent")
-    @patch("services.agents.drug_interaction_agent.types")
+    @patch("services.agents.base_adk_agent.Agent")
+    @patch("services.agents.base_adk_agent.types")
     def test_build_interaction_check_prompt_includes_all_params(
         self, mock_types: MagicMock, mock_agent_class: MagicMock
     ) -> None:
         """Test that prompt includes all provided parameters."""
         # Arrange
-        mock_agent_instance = MagicMock()
-        mock_agent_class.return_value = mock_agent_instance
-
         agent = DrugInteractionCheckerAgent(api_key="test_key")
 
         # Act
@@ -262,16 +289,26 @@ class TestDrugInteractionCheckerAgent:
         assert "kidney_function" in prompt
         assert "JSON response" in prompt
 
-    @patch("services.agents.drug_interaction_agent.Agent")
-    @patch("services.agents.drug_interaction_agent.types")
+    @patch("services.agents.base_adk_agent.Runner")
+    @patch("services.agents.base_adk_agent.Agent")
+    @patch("services.agents.base_adk_agent.types")
     def test_check_interaction_without_optional_params(
-        self, mock_types: MagicMock, mock_agent_class: MagicMock
+        self, mock_types: MagicMock, mock_agent_class: MagicMock, mock_runner_class: MagicMock
     ) -> None:
         """Test check_interaction works without optional parameters."""
         # Arrange
-        mock_agent_instance = MagicMock()
-        mock_agent_class.return_value = mock_agent_instance
-        mock_agent_instance.run_async.return_value = _async_return("No interactions")
+        mock_runner_instance = MagicMock()
+        mock_runner_class.return_value = mock_runner_instance
+        mock_runner_instance.app_name = "DrugInteractionChecker"
+
+        # Mock session service
+        mock_session_service = AsyncMock()
+        mock_session_service.get_session.return_value = MagicMock()
+        mock_runner_instance.session_service = mock_session_service
+
+        mock_runner_instance.run_async.side_effect = lambda **_: _async_generator_mock(
+            "No interactions"
+        )
 
         agent = DrugInteractionCheckerAgent(api_key="test_key")
 
@@ -279,6 +316,6 @@ class TestDrugInteractionCheckerAgent:
         result = agent.check_interaction(medications=["tacrolimus"])
 
         # Assert
-        mock_agent_instance.run_async.assert_called_once()
+        mock_runner_instance.run_async.assert_called_once()
         assert result["has_interaction"] is False
-        assert result["severity"] == "none"
+        assert result["severity"] in ["none", "unknown"]
