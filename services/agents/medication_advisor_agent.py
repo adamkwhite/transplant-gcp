@@ -11,6 +11,7 @@ Transplant Recipients) to provide population-based risk assessments.
 from typing import Any
 
 from services.agents.base_adk_agent import BaseADKAgent
+from services.agents.response_parser import extract_json_from_response
 from services.config.adk_config import MEDICATION_ADVISOR_CONFIG
 from services.data.srtr_outcomes import get_srtr_data
 
@@ -159,21 +160,34 @@ class MedicationAdvisorAgent(BaseADKAgent):
         Returns:
             Structured dict with recommendation data
         """
-        # ADK returns agent response object
-        # Extract text content and parse JSON if present
         response_text = str(response)
 
-        # Basic parsing (in real implementation, use JSON parsing)
-        # For now, return structured format
-        return {
-            "recommendation": response_text,
-            "reasoning_steps": ["Agent analysis in progress"],
-            "risk_level": "medium",
-            "confidence": 0.85,
-            "next_steps": ["Monitor patient response"],
-            "agent_name": self.agent.name,
-            "raw_response": response_text,
-        }
+        # Try to extract and parse JSON from the response
+        parsed_json = extract_json_from_response(response_text)
+
+        if parsed_json:
+            # Use parsed values from AI
+            return {
+                "recommendation": parsed_json.get("recommendation", response_text),
+                "reasoning_steps": parsed_json.get("reasoning_steps", []),
+                "risk_level": parsed_json.get("risk_level", "medium"),
+                "confidence": parsed_json.get("confidence", 0.85),
+                "next_steps": parsed_json.get("next_steps", []),
+                "srtr_data_source": parsed_json.get("srtr_data_source"),
+                "agent_name": self.agent.name,
+                "raw_response": response_text,
+            }
+        else:
+            # Fallback if JSON parsing fails - return full response as recommendation
+            return {
+                "recommendation": response_text,
+                "reasoning_steps": ["See recommendation for full AI analysis"],
+                "risk_level": "medium",
+                "confidence": 0.85,
+                "next_steps": ["Review AI recommendation"],
+                "agent_name": self.agent.name,
+                "raw_response": response_text,
+            }
 
     def get_therapeutic_window(self, medication: str) -> dict[str, Any]:
         """

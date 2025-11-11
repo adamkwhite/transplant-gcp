@@ -8,6 +8,7 @@ drug-drug, drug-food, and drug-supplement interactions for transplant patients.
 from typing import Any
 
 from services.agents.base_adk_agent import BaseADKAgent
+from services.agents.response_parser import extract_json_from_response
 from services.config.adk_config import DRUG_INTERACTION_CONFIG
 
 
@@ -122,23 +123,41 @@ class DrugInteractionCheckerAgent(BaseADKAgent):
         Returns:
             Structured dict with interaction data
         """
-        # ADK returns agent response text
-        # The response contains the full AI analysis
         response_text = str(response)
 
-        # Return the AI response text in mechanism field
-        # The frontend will parse JSON if present
-        return {
-            "has_interaction": False,
-            "severity": "none",
-            "interactions": [],
-            "mechanism": response_text,  # Full AI response for frontend parsing
-            "clinical_effect": "No significant interactions detected",
-            "recommendation": "Continue current regimen as prescribed",
-            "confidence": 0.90,
-            "agent_name": self.agent.name,
-            "raw_response": response_text,
-        }
+        # Try to extract and parse JSON from the response
+        parsed_json = extract_json_from_response(response_text)
+
+        if parsed_json:
+            # Use parsed values from AI
+            return {
+                "has_interaction": parsed_json.get("has_interaction", False),
+                "severity": parsed_json.get("severity", "none"),
+                "interactions": parsed_json.get("interactions", []),
+                "mechanism": parsed_json.get("mechanism", ""),
+                "clinical_effect": parsed_json.get(
+                    "clinical_effect", "No significant interactions detected"
+                ),
+                "recommendation": parsed_json.get(
+                    "recommendation", "Continue current regimen as prescribed"
+                ),
+                "confidence": parsed_json.get("confidence", 0.90),
+                "agent_name": self.agent.name,
+                "raw_response": response_text,
+            }
+        else:
+            # Fallback if JSON parsing fails
+            return {
+                "has_interaction": False,
+                "severity": "unknown",
+                "interactions": [],
+                "mechanism": response_text,
+                "clinical_effect": "Unable to parse AI response",
+                "recommendation": "Please review full analysis and consult pharmacist",
+                "confidence": 0.50,
+                "agent_name": self.agent.name,
+                "raw_response": response_text,
+            }
 
     def get_known_interactions_reference(self) -> dict[str, Any]:
         """
