@@ -106,8 +106,11 @@ class MedicationAdvisorAgent(BaseADKAgent):
         # Add SRTR population statistics if patient context includes required fields
         srtr_data_available = False
         if patient_context:
-            organ = patient_context.get("organ_type", "kidney")
-            age_group = patient_context.get("age_group", "35-49")
+            # Support both organ_type (from frontend) and transplant_type (internal)
+            organ = patient_context.get("organ_type") or patient_context.get(
+                "transplant_type", "kidney"
+            )
+            age_group = patient_context.get("age_group", "50-64")
             months_post_tx = patient_context.get("months_post_transplant", 6)
 
             try:

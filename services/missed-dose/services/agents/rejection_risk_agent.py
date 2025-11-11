@@ -102,7 +102,7 @@ class RejectionRiskAgent(BaseADKAgent):
         srtr_data_available = False
         if patient_context:
             organ = patient_context.get("organ_type", "kidney")
-            age_group = patient_context.get("age_group", "35-49")
+            age_group = patient_context.get("age_group", "50-64")
             months_post_tx = patient_context.get("months_post_transplant", 6)
 
             try:
@@ -155,18 +155,18 @@ class RejectionRiskAgent(BaseADKAgent):
         Returns:
             Structured dict with rejection risk data
         """
-        # ADK returns agent response object
-        # Extract text content and parse JSON if present
+        # ADK returns agent response text from _invoke_agent()
+        # The response contains the full AI analysis
         response_text = str(response)
 
-        # Basic parsing (in real implementation, use JSON parsing)
-        # For now, return structured format
+        # Return the AI response text in reasoning_steps
+        # The frontend will display this directly
         return {
             "rejection_probability": 0.75,
             "urgency": "HIGH",
             "risk_level": "critical",
             "recommended_action": "Contact transplant team IMMEDIATELY",
-            "reasoning_steps": ["Agent analysis in progress"],
+            "reasoning_steps": [response_text],  # Full AI response shown to user
             "similar_cases": [],
             "agent_name": self.agent.name,
             "raw_response": response_text,

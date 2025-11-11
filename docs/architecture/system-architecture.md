@@ -22,19 +22,17 @@ graph TB
                     DrugCheck[DrugInteraction<br/>Agent<br/>Interaction Detection]
                     RejectionAgent[RejectionRisk<br/>Agent<br/>SRTR Outcomes]
                 end
-
-                BaseAgent[BaseADKAgent<br/>Shared Logic]
             end
         end
     end
 
     subgraph "AI Services"
-        Gemini[Gemini 2.0 Flash<br/>Google AI Model]
+        Gemini[Gemini 2.0 Flash<br/>AI Inference]
     end
 
     subgraph "Data Layer"
-        Firestore[(Google Firestore<br/>NoSQL Database)]
-        SRTR[SRTR Transplant<br/>Outcomes Data]
+        Firestore[(Patient Data<br/>Firestore NoSQL)]
+        SRTR[(SRTR 2023<br/>Transplant Outcomes)]
     end
 
     %% User interactions
@@ -50,26 +48,19 @@ graph TB
     Coordinator -.->|Routes to| DrugCheck
     Coordinator -.->|Routes to| RejectionAgent
 
-    %% Inheritance relationships
-    BaseAgent -.->|Inherits| MedAdvisor
-    BaseAgent -.->|Inherits| SymptomMon
-    BaseAgent -.->|Inherits| DrugCheck
-    BaseAgent -.->|Inherits| RejectionAgent
-
-    %% AI Model connections
+    %% All agents use AI Inference
     Coordinator -->|AI Inference| Gemini
     MedAdvisor -->|AI Inference| Gemini
     SymptomMon -->|AI Inference| Gemini
     DrugCheck -->|AI Inference| Gemini
     RejectionAgent -->|AI Inference| Gemini
 
-    %% Database connections
-    API -->|Store/Retrieve| Firestore
-    MedAdvisor -->|Patient Data| Firestore
-    SymptomMon -->|Patient Data| Firestore
-    DrugCheck -->|Patient Data| Firestore
-    RejectionAgent -->|Query| SRTR
-    RejectionAgent -->|Store Results| Firestore
+    %% Flask API queries patient data from Firestore
+    API -->|Query Patient Data| Firestore
+
+    %% Specialist agents query SRTR data directly
+    MedAdvisor -->|Population Stats| SRTR
+    RejectionAgent -->|Outcomes Data| SRTR
 
     %% Styling
     classDef cloudRun fill:#4285F4,stroke:#1967D2,color:#fff
@@ -78,7 +69,7 @@ graph TB
     classDef data fill:#EA4335,stroke:#C5221F,color:#fff
     classDef user fill:#9AA0A6,stroke:#5F6368,color:#fff
 
-    class API,Coordinator,MedAdvisor,SymptomMon,DrugCheck,RejectionAgent,BaseAgent cloudRun
+    class API,Coordinator,MedAdvisor,SymptomMon,DrugCheck,RejectionAgent cloudRun
     class Gemini ai
     class Firestore,SRTR data
     class Patient,WebUI user

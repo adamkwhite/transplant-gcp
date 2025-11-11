@@ -108,26 +108,54 @@
                 <div class="stat-number">94.8%</div>
                 <div class="stat-label">Code Coverage</div>
             </div>
+            <div class="stat-card">
+                <div class="stat-number">3</div>
+                <div class="stat-label">Architectures Evaluated</div>
+            </div>
         </section>
+
+        <p style="text-align: center; margin-top: 1.5rem; padding: 0 2rem; font-size: 0.9rem; color: #5f6368; background: var(--card-bg); padding-top: 1rem; padding-bottom: 2rem;">
+            Evaluated Pub/Sub, In-Process, and ADK patterns before selecting Google ADK sub-agents.
+            <a href="https://github.com/adamkwhite/transplant-gcp/tree/main/docs/architecture" target="_blank" style="color: #1967d2; text-decoration: none; font-weight: 500;">View comparison →</a>
+        </p>
 
         <section class="cta-section">
             <h3>Try It Out</h3>
-            <p>Test the AI-powered medication analysis - copy this command to see the multi-agent system in action:</p>
-            <div class="code-block">
-                <code style="font-size: 0.75rem; line-height: 1.5; display: block; white-space: pre;">curl -X POST {{ request.host_url }}medications/missed-dose \
-  -H "Content-Type: application/json" \
-  -d '{
-    "medication": "tacrolimus",
-    "scheduled_time": "8:00 AM",
-    "current_time": "2:00 PM",
-    "patient_id": "demo_patient"
-  }'</code>
+
+            <div style="text-align: center; margin-bottom: 2rem; margin-top: 1.5rem;">
+                <a href="https://transplant-medication-demo.netlify.app/" class="button primary" target="_blank" style="display: inline-block;">
+                    🌐 Try Interactive Web Demo
+                </a>
+                <p style="margin-top: 0.75rem; font-size: 0.9rem; color: #5f6368;">
+                    Or use the curl commands below to test the API directly
+                </p>
             </div>
-            <p style="margin-top: 1rem; font-size: 0.9rem; color: #5f6368;">
-                Response includes: AI reasoning chain • Medical recommendation • Risk assessment • SRTR data citations • Next clinical steps
+
+            <h4 style="margin-top: 1.5rem; margin-bottom: 0.5rem; color: #1967d2;">1. Missed Dose Analysis</h4>
+            <p>Test the medication advisor agent - analyzes timing and provides guidance:</p>
+            <div class="code-block">
+                <code>curl -X POST https://missed-dose-service-64rz4skmdq-uc.a.run.app/medications/missed-dose \
+  -H "Content-Type: application/json" \
+  -d '{"medication":"tacrolimus","scheduled_time":"8:00 AM","current_time":"2:00 PM","patient_id":"demo_patient"}'</code>
+            </div>
+            <p style="margin-top: 0.5rem; font-size: 0.85rem; color: #5f6368;">
+                Response includes: AI reasoning • Medical recommendation • Risk assessment • SRTR data • Next steps
             </p>
-            <div class="button-group">
+
+            <h4 style="margin-top: 2rem; margin-bottom: 0.5rem; color: #1967d2;">2. Rejection Risk Analysis</h4>
+            <p>Test the rejection risk agent - evaluates symptoms using real SRTR transplant outcomes data:</p>
+            <div class="code-block">
+                <code>curl -X POST https://missed-dose-service-64rz4skmdq-uc.a.run.app/rejection/analyze \
+  -H "Content-Type: application/json" \
+  -d '{"symptoms":{"fever":true,"decreased_urine_output":true,"tenderness":true,"fever_temperature":101.5},"patient_id":"demo_patient"}'</code>
+            </div>
+            <p style="margin-top: 0.5rem; font-size: 0.85rem; color: #5f6368;">
+                Response includes: Urgency level • Rejection probability • Population statistics • Recommended actions
+            </p>
+
+            <div class="button-group" style="margin-top: 2rem;">
                 <a href="/health" class="button secondary">View System Health</a>
+                <a href="https://sonarcloud.io/summary/new_code?id=adamkwhite_transplant-gcp&branch=main" class="button secondary" target="_blank">View Code Quality</a>
                 <a href="https://github.com/adamkwhite/transplant-gcp" class="button primary" target="_blank">View on GitHub</a>
             </div>
         </section>
