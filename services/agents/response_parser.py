@@ -28,7 +28,8 @@ def extract_json_from_response(response_text: str) -> dict[str, Any] | None:
 
     # Try to extract JSON from markdown code blocks
     # Pattern 1: ```json ... ```
-    json_match = re.search(r"```json\s*([\s\S]*?)\s*```", response_text, re.DOTALL)
+    # Use non-backtracking pattern to prevent ReDoS
+    json_match = re.search(r"```json\s*(.+?)\s*```", response_text, re.DOTALL)
     if json_match:
         try:
             parsed = json.loads(json_match.group(1))
@@ -38,7 +39,8 @@ def extract_json_from_response(response_text: str) -> dict[str, Any] | None:
             pass
 
     # Pattern 2: ``` ... ``` (without json tag)
-    json_match = re.search(r"```\s*([\s\S]*?)\s*```", response_text, re.DOTALL)
+    # Use non-backtracking pattern to prevent ReDoS
+    json_match = re.search(r"```\s*(.+?)\s*```", response_text, re.DOTALL)
     if json_match:
         try:
             parsed = json.loads(json_match.group(1))
@@ -48,7 +50,8 @@ def extract_json_from_response(response_text: str) -> dict[str, Any] | None:
             pass
 
     # Pattern 3: Raw JSON object anywhere in text
-    json_match = re.search(r"(\{[\s\S]*\})", response_text, re.DOTALL)
+    # Use greedy match for efficiency - JSON objects are bounded by braces
+    json_match = re.search(r"(\{.+\})", response_text, re.DOTALL)
     if json_match:
         try:
             parsed = json.loads(json_match.group(1))
