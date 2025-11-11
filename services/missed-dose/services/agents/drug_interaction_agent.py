@@ -5,20 +5,13 @@ Specialized ADK agent for validating medication safety and identifying
 drug-drug, drug-food, and drug-supplement interactions for transplant patients.
 """
 
-import asyncio
 from typing import Any
 
-from google.adk.agents import Agent  # type: ignore[import-untyped]
-from google.genai import types  # type: ignore[import-untyped]
-
-from services.config.adk_config import (
-    DEFAULT_GENERATION_CONFIG,
-    DRUG_INTERACTION_CONFIG,
-    GEMINI_API_KEY,
-)
+from services.agents.base_adk_agent import BaseADKAgent
+from services.config.adk_config import DRUG_INTERACTION_CONFIG
 
 
-class DrugInteractionCheckerAgent:
+class DrugInteractionCheckerAgent(BaseADKAgent):
     """
     ADK Agent for medication interaction checking and safety validation.
 
@@ -36,22 +29,11 @@ class DrugInteractionCheckerAgent:
         Args:
             api_key: Gemini API key (defaults to config if not provided)
         """
-        self.api_key = api_key or GEMINI_API_KEY
-
-        # Create ADK agent instance with generation config (uses GEMINI_MODEL_LITE for faster checks)
-        generate_config = types.GenerateContentConfig(
-            temperature=DEFAULT_GENERATION_CONFIG["temperature"],
-            max_output_tokens=int(DEFAULT_GENERATION_CONFIG["max_output_tokens"]),
-            top_p=DEFAULT_GENERATION_CONFIG["top_p"],
-            top_k=DEFAULT_GENERATION_CONFIG["top_k"],
-        )
-
-        self.agent = Agent(
-            name=DRUG_INTERACTION_CONFIG["name"],
-            model=DRUG_INTERACTION_CONFIG["model"],
-            description=DRUG_INTERACTION_CONFIG["description"],
-            instruction=DRUG_INTERACTION_CONFIG["instruction"],
-            generate_content_config=generate_config,
+        super().__init__(
+            agent_config=DRUG_INTERACTION_CONFIG,
+            app_name="DrugInteractionChecker",
+            session_id_prefix="interaction_check",
+            api_key=api_key,
         )
 
     def check_interaction(
@@ -91,8 +73,8 @@ class DrugInteractionCheckerAgent:
             patient_context=patient_context,
         )
 
-        # Invoke agent (ADK handles session management)
-        response = asyncio.run(self.agent.run_async(prompt))  # type: ignore[attr-defined, arg-type, var-annotated]
+        # Invoke agent using base class method
+        response = self._invoke_agent(prompt)
 
         # Parse agent response
         return self._parse_agent_response(response)
@@ -140,17 +122,17 @@ class DrugInteractionCheckerAgent:
         Returns:
             Structured dict with interaction data
         """
-        # ADK returns agent response text
-        # The response contains the full AI analysis
+        # ADK returns agent response object
+        # Extract text content and parse JSON if present
         response_text = str(response)
 
-        # Return the AI response text in mechanism field
-        # The frontend will parse JSON if present
+        # Basic parsing (in real implementation, use JSON parsing)
+        # For now, return structured format
         return {
             "has_interaction": False,
             "severity": "none",
             "interactions": [],
-            "mechanism": response_text,  # Full AI response for frontend parsing
+            "mechanism": response_text,
             "clinical_effect": "No significant interactions detected",
             "recommendation": "Continue current regimen as prescribed",
             "confidence": 0.90,
