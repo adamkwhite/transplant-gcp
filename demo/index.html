@@ -312,6 +312,32 @@
             font-size: 2rem;
             margin-right: 15px;
         }
+
+        footer {
+            text-align: center;
+            color: white;
+            padding: 40px 20px;
+            margin-top: 60px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+
+        footer p {
+            margin: 8px 0;
+            font-size: 1rem;
+            opacity: 0.95;
+        }
+
+        footer strong {
+            font-weight: 700;
+        }
+
+        footer .tech-note {
+            font-size: 0.9rem;
+            opacity: 0.85;
+            margin-top: 15px;
+        }
     </style>
 </head>
 <body>
@@ -508,6 +534,14 @@
                 <!-- Results will be inserted here -->
             </div>
         </div>
+
+        <footer>
+            <p>Built for <strong>Google Cloud Run Hackathon 2025</strong> - AI Agents Category</p>
+            <p>Created in memory of those affected by transplant complications</p>
+            <p class="tech-note">
+                Powered by Google ADK • Gemini 2.0 Flash • Cloud Run • Firestore
+            </p>
+        </footer>
     </div>
 
     <script>

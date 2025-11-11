@@ -145,6 +145,76 @@ def calculate_adherence(patient_id):
     return 0.8, 0
 
 
+def normalize_rejection_symptoms(raw_symptoms: dict) -> dict:
+    """
+    Normalize symptom data to match RejectionRiskAgent expected format.
+
+    Handles multiple input formats:
+    - Frontend format: fever: true, fever_temperature: 101.5
+    - Direct format: fever: 101.5
+
+    Returns normalized format expected by agent:
+    - fever: <temperature in °F>
+    - weight_gain: <lbs gained>
+    - fatigue: <description>
+    - urine_output: <description>
+    """
+    normalized = {}
+
+    # Handle fever (can be boolean + temperature, or just temperature)
+    if "fever_temperature" in raw_symptoms:
+        normalized["fever"] = raw_symptoms["fever_temperature"]
+    elif "fever" in raw_symptoms:
+        fever_val = raw_symptoms["fever"]
+        # If fever is boolean True and no temperature, assume mild fever
+        if fever_val is True:
+            normalized["fever"] = 99.5
+        elif isinstance(fever_val, int | float):
+            normalized["fever"] = fever_val
+        # If fever is False or missing, don't include it
+
+    # Handle weight gain
+    if "weight_gain" in raw_symptoms:
+        normalized["weight_gain"] = raw_symptoms["weight_gain"]
+    elif "weight_gain_lbs" in raw_symptoms:
+        normalized["weight_gain"] = raw_symptoms["weight_gain_lbs"]
+
+    # Handle fatigue (convert boolean to description)
+    if "fatigue" in raw_symptoms:
+        fatigue_val = raw_symptoms["fatigue"]
+        if fatigue_val is True:
+            normalized["fatigue"] = "moderate"
+        elif fatigue_val is False:
+            normalized["fatigue"] = "none"
+        else:
+            normalized["fatigue"] = fatigue_val
+    elif "fatigue_level" in raw_symptoms:
+        normalized["fatigue"] = raw_symptoms["fatigue_level"]
+
+    # Handle urine output (convert boolean to description)
+    if "decreased_urine_output" in raw_symptoms:
+        if raw_symptoms["decreased_urine_output"] is True:
+            normalized["urine_output"] = "decreased"
+        elif raw_symptoms["decreased_urine_output"] is False:
+            normalized["urine_output"] = "normal"
+    elif "urine_output" in raw_symptoms:
+        urine_val = raw_symptoms["urine_output"]
+        if urine_val is True:
+            normalized["urine_output"] = "decreased"
+        elif urine_val is False:
+            normalized["urine_output"] = "normal"
+        else:
+            normalized["urine_output"] = urine_val
+
+    # Pass through any other symptom fields directly
+    other_fields = ["tenderness", "swelling", "pain", "nausea"]
+    for field in other_fields:
+        if field in raw_symptoms:
+            normalized[field] = raw_symptoms[field]
+
+    return normalized
+
+
 def record_interaction(patient_id, interaction_type, data):
     """Record interaction to Firestore"""
     try:
@@ -387,9 +457,12 @@ def analyze_rejection_risk():
         patient_id = data.get("patient_id", "demo_patient")
         patient_context = data.get("patient_context")
 
+        # Normalize symptom data to agent's expected format
+        normalized_symptoms = normalize_rejection_symptoms(symptoms)
+
         # Get AI-powered rejection risk analysis from ADK RejectionRiskAgent
         agent_response = rejection_risk.analyze_rejection_risk(
-            symptoms=symptoms, patient_id=patient_id, patient_context=patient_context
+            symptoms=normalized_symptoms, patient_id=patient_id, patient_context=patient_context
         )
 
         # Record interaction
