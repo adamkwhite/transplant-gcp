@@ -129,19 +129,44 @@ class DrugInteractionCheckerAgent(BaseADKAgent):
         parsed_json = extract_json_from_response(response_text)
 
         if parsed_json:
+            interactions = parsed_json.get("interactions", [])
+
+            # Determine severity: use top-level if present, otherwise get highest from interactions
+            severity = parsed_json.get("severity")
+            if not severity and interactions:
+                # Map severity levels to priority (higher = more severe)
+                severity_priority = {
+                    "contraindicated": 5,
+                    "severe": 4,
+                    "moderate": 3,
+                    "mild": 2,
+                    "none": 1,
+                }
+                highest = max(
+                    (i.get("severity", "none").lower() for i in interactions),
+                    key=lambda s: severity_priority.get(s, 0),
+                )
+                severity = highest
+            elif not severity:
+                severity = "none"
+
+            # Use first interaction's details if top-level fields missing
+            first_interaction = interactions[0] if interactions else {}
+
             # Use parsed values from AI
             return {
                 "has_interaction": parsed_json.get("has_interaction", False),
-                "severity": parsed_json.get("severity", "none"),
-                "interactions": parsed_json.get("interactions", []),
-                "mechanism": parsed_json.get("mechanism", ""),
-                "clinical_effect": parsed_json.get(
-                    "clinical_effect", "No significant interactions detected"
-                ),
-                "recommendation": parsed_json.get(
+                "severity": severity,
+                "interactions": interactions,
+                "mechanism": parsed_json.get("mechanism") or first_interaction.get("mechanism", ""),
+                "clinical_effect": parsed_json.get("clinical_effect")
+                or first_interaction.get("clinical_effect", "No significant interactions detected"),
+                "recommendation": parsed_json.get("recommendation")
+                or first_interaction.get(
                     "recommendation", "Continue current regimen as prescribed"
                 ),
-                "confidence": parsed_json.get("confidence", 0.90),
+                "confidence": parsed_json.get("confidence")
+                or first_interaction.get("confidence", 0.90),
                 "agent_name": self.agent.name,
                 "raw_response": response_text,
             }
