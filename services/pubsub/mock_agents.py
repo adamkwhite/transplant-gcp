@@ -15,17 +15,22 @@ class MockMedicationAdvisorAgent:
         self,
         medication: str,
         scheduled_time: str,
-        current_time: str,  # noqa: ARG002
-        patient_id: str | None = None,  # noqa: ARG002
-        patient_context: dict[str, Any] | None = None,  # noqa: ARG002
+        current_time: str,
+        patient_id: str | None = None,
+        patient_context: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         """Return mock medication advice response."""
+        patient_info = f" for patient {patient_id}" if patient_id else ""
+        transplant_type = (
+            patient_context.get("transplant_type", "kidney") if patient_context else "kidney"
+        )
+
         return {
-            "recommendation": f"For {medication} missed at {scheduled_time}, take now if within 4 hours",
+            "recommendation": f"For {medication} scheduled at {scheduled_time}, now {current_time}{patient_info}, take now if within 4 hours",
             "reasoning_steps": [
-                "Analyzed medication half-life",
-                "Considered time elapsed",
-                "Assessed rejection risk",
+                f"Analyzed {medication} half-life for {transplant_type} transplant",
+                f"Time elapsed from {scheduled_time} to {current_time}",
+                "Assessed rejection risk based on patient context",
             ],
             "risk_level": "moderate",
             "confidence": 0.85,
@@ -40,15 +45,22 @@ class MockSymptomMonitorAgent:
     def analyze_symptoms(
         self,
         symptoms: list[str],
-        patient_id: str | None = None,  # noqa: ARG002
-        patient_context: dict[str, Any] | None = None,  # noqa: ARG002
-        vital_signs: dict[str, Any] | None = None,  # noqa: ARG002
+        patient_id: str | None = None,
+        patient_context: dict[str, Any] | None = None,
+        vital_signs: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         """Return mock symptom analysis response."""
+        patient_info = f" (patient {patient_id})" if patient_id else ""
+        transplant_type = (
+            patient_context.get("transplant_type", "kidney") if patient_context else "kidney"
+        )
+        temp = vital_signs.get("temperature") if vital_signs else None
+        temp_note = f" with temperature {temp}°F" if temp else ""
+
         return {
             "rejection_risk": "moderate" if "fever" in symptoms else "low",
             "urgency": "same_day" if "fever" in symptoms else "routine",
-            "reasoning": f"Patient reports {len(symptoms)} symptoms",
+            "reasoning": f"Patient{patient_info} reports {len(symptoms)} symptoms{temp_note} post-{transplant_type} transplant",
             "actions": [
                 "Monitor temperature",
                 "Track fluid intake",
@@ -67,23 +79,34 @@ class MockDrugInteractionCheckerAgent:
         self,
         medications: list[str],
         foods: list[str] | None = None,
-        supplements: list[str] | None = None,  # noqa: ARG002
-        patient_id: str | None = None,  # noqa: ARG002
-        patient_context: dict[str, Any] | None = None,  # noqa: ARG002
+        supplements: list[str] | None = None,
+        patient_id: str | None = None,
+        patient_context: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         """Return mock interaction check response."""
         has_interaction = "ibuprofen" in medications or (foods and "grapefruit" in str(foods))
+        has_supplement_interaction = supplements and any(
+            supp in ["st john's wort", "ginkgo"] for supp in supplements
+        )
+        patient_info = f" for patient {patient_id}" if patient_id else ""
+        transplant_type = (
+            patient_context.get("transplant_type", "kidney") if patient_context else "kidney"
+        )
 
         return {
-            "has_interaction": has_interaction,
-            "severity": "severe" if has_interaction else "none",
+            "has_interaction": has_interaction or has_supplement_interaction,
+            "severity": "severe" if (has_interaction or has_supplement_interaction) else "none",
             "interactions": [
                 {"drug1": medications[0], "drug2": "ibuprofen", "effect": "Increased toxicity"}
             ]
             if has_interaction
             else [],
-            "mechanism": "CYP3A4 inhibition" if has_interaction else "No interactions",
-            "clinical_effect": "Risk of nephrotoxicity" if has_interaction else "None",
+            "mechanism": "CYP3A4 inhibition"
+            if (has_interaction or has_supplement_interaction)
+            else "No interactions",
+            "clinical_effect": f"Risk of nephrotoxicity in {transplant_type} transplant{patient_info}"
+            if has_interaction
+            else "None",
             "recommendation": "Avoid combination - use acetaminophen instead"
             if has_interaction
             else "No interactions detected",
