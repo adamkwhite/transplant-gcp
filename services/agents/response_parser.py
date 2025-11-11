@@ -27,9 +27,9 @@ def extract_json_from_response(response_text: str) -> dict[str, Any] | None:
         return None
 
     # Try to extract JSON from markdown code blocks
-    # Pattern 1: ```json ... ```
-    # Use non-backtracking pattern to prevent ReDoS
-    json_match = re.search(r"```json\s*(.+?)\s*```", response_text, re.DOTALL)
+    # Pattern 1: ```json ... ``` - match JSON in code block
+    # Use [^`]+ to match non-backtick characters, preventing catastrophic backtracking
+    json_match = re.search(r"```json\s*([^`]+)```", response_text)
     if json_match:
         try:
             parsed = json.loads(json_match.group(1))
@@ -39,8 +39,8 @@ def extract_json_from_response(response_text: str) -> dict[str, Any] | None:
             pass
 
     # Pattern 2: ``` ... ``` (without json tag)
-    # Use non-backtracking pattern to prevent ReDoS
-    json_match = re.search(r"```\s*(.+?)\s*```", response_text, re.DOTALL)
+    # Use [^`]+ to match non-backtick characters, preventing catastrophic backtracking
+    json_match = re.search(r"```\s*([^`]+)```", response_text)
     if json_match:
         try:
             parsed = json.loads(json_match.group(1))
@@ -50,14 +50,44 @@ def extract_json_from_response(response_text: str) -> dict[str, Any] | None:
             pass
 
     # Pattern 3: Raw JSON object anywhere in text
-    # Use greedy match for efficiency - JSON objects are bounded by braces
-    json_match = re.search(r"(\{.+\})", response_text, re.DOTALL)
-    if json_match:
-        try:
-            parsed = json.loads(json_match.group(1))
-            if isinstance(parsed, dict):
-                return parsed
-        except json.JSONDecodeError:
-            pass
+    # Find first '{' and use brace counting to find matching '}'
+    # This avoids regex backtracking issues entirely
+    brace_index = response_text.find("{")
+    if brace_index != -1:
+        # Count braces to find matching closing brace
+        depth = 0
+        in_string = False
+        escape_next = False
+
+        for i in range(brace_index, len(response_text)):
+            char = response_text[i]
+
+            if escape_next:
+                escape_next = False
+                continue
+
+            if char == "\\":
+                escape_next = True
+                continue
+
+            if char == '"' and not escape_next:
+                in_string = not in_string
+                continue
+
+            if not in_string:
+                if char == "{":
+                    depth += 1
+                elif char == "}":
+                    depth -= 1
+                    if depth == 0:
+                        # Found matching closing brace
+                        try:
+                            candidate = response_text[brace_index : i + 1]
+                            parsed = json.loads(candidate)
+                            if isinstance(parsed, dict):
+                                return parsed
+                        except json.JSONDecodeError:
+                            pass
+                        break
 
     return None
