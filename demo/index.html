@@ -380,8 +380,8 @@
                         <label>Age Group</label>
                         <select id="age-group">
                             <option value="18-34">18-34 years</option>
-                            <option value="35-49" selected>35-49 years</option>
-                            <option value="50-64">50-64 years</option>
+                            <option value="35-49">35-49 years</option>
+                            <option value="50-64" selected>50-64 years</option>
                             <option value="65+">65+ years</option>
                         </select>
                     </div>
@@ -685,7 +685,7 @@
 
             // Get organ type and age group from form (if available) or use defaults
             const organType = document.getElementById('organ-type') ? document.getElementById('organ-type').value : 'kidney';
-            const ageGroup = document.getElementById('age-group') ? document.getElementById('age-group').value : '35-49';
+            const ageGroup = document.getElementById('age-group') ? document.getElementById('age-group').value : '50-64';
 
             // Show loading
             document.getElementById('rejection-loading').classList.add('show');
@@ -712,15 +712,52 @@
                 const data = await response.json();
 
                 // Transform API response to match display format
+                // Parse JSON from reasoning_steps if it contains JSON
+                let parsedData = data;
+                if (data.reasoning_steps && data.reasoning_steps.length > 0) {
+                    const firstStep = data.reasoning_steps[0];
+                    if (firstStep.includes('```json') || firstStep.includes('{')) {
+                        try {
+                            // Try to extract JSON from markdown code blocks (with or without extra text)
+                            let jsonMatch = firstStep.match(/```json\s*([\s\S]*?)\s*```/);
+                            if (!jsonMatch) {
+                                // Try without the json tag
+                                jsonMatch = firstStep.match(/```\s*([\s\S]*?)\s*```/);
+                            }
+                            if (!jsonMatch) {
+                                // Try to find raw JSON object
+                                jsonMatch = firstStep.match(/(\{[\s\S]*\})/);
+                            }
+
+                            if (jsonMatch) {
+                                const parsed = JSON.parse(jsonMatch[1]);
+                                // Override with parsed data
+                                parsedData = {
+                                    ...data,
+                                    rejection_probability: parsed.rejection_probability,
+                                    urgency: parsed.urgency,
+                                    risk_level: parsed.risk_level,
+                                    recommended_action: parsed.recommended_action,
+                                    reasoning_steps: parsed.reasoning_steps || [],
+                                    similar_cases: parsed.similar_cases || [],
+                                    srtr_data_source: parsed.srtr_data_source || data.srtr_data_source
+                                };
+                            }
+                        } catch (e) {
+                            console.error('Failed to parse reasoning_steps JSON:', e);
+                        }
+                    }
+                }
+
                 const displayData = {
                     query_symptoms: `fever ${symptoms.fever}F, weight gain ${symptoms.weight_gain} lbs, fatigue ${symptoms.fatigue}, urine output ${symptoms.urine_output}`,
-                    rejection_probability: `${(data.rejection_probability * 100).toFixed(0)}%`,
-                    urgency: data.urgency,
-                    risk_level: data.risk_level,
-                    recommended_action: data.recommended_action,
-                    reasoning_steps: data.reasoning_steps,
-                    top_similar_cases: data.similar_cases || [],
-                    srtr_data_source: data.srtr_data_source
+                    rejection_probability: `${(parsedData.rejection_probability * 100).toFixed(0)}%`,
+                    urgency: parsedData.urgency,
+                    risk_level: parsedData.risk_level,
+                    recommended_action: parsedData.recommended_action,
+                    reasoning_steps: parsedData.reasoning_steps,
+                    top_similar_cases: parsedData.similar_cases || [],
+                    srtr_data_source: parsedData.srtr_data_source
                 };
 
                 displayRejectionResult(displayData);
