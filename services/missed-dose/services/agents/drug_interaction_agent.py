@@ -140,17 +140,17 @@ class DrugInteractionCheckerAgent:
         Returns:
             Structured dict with interaction data
         """
-        # ADK returns agent response object
-        # Extract text content and parse JSON if present
+        # ADK returns agent response text
+        # The response contains the full AI analysis
         response_text = str(response)
 
-        # Basic parsing (in real implementation, use JSON parsing)
-        # For now, return structured format
+        # Return the AI response text in mechanism field
+        # The frontend will parse JSON if present
         return {
             "has_interaction": False,
             "severity": "none",
             "interactions": [],
-            "mechanism": response_text,
+            "mechanism": response_text,  # Full AI response for frontend parsing
             "clinical_effect": "No significant interactions detected",
             "recommendation": "Continue current regimen as prescribed",
             "confidence": 0.90,

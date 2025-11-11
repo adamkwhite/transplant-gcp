@@ -432,6 +432,75 @@ def analyze_rejection_risk():
         return jsonify({"error": str(e)}), 500
 
 
+@app.route("/interactions/check", methods=["POST"])
+def check_drug_interactions():
+    """
+    Drug Interaction Checking endpoint.
+
+    Analyzes drug-drug, drug-food, and drug-supplement interactions.
+
+    Request body:
+        {
+            "medications": ["tacrolimus", "ibuprofen"],
+            "foods": ["grapefruit"],  # Optional
+            "supplements": ["st john's wort"],  # Optional
+            "patient_id": "maria_rodriguez"  # Optional
+        }
+
+    Returns:
+        {
+            "has_interaction": true,
+            "severity": "severe",
+            "interactions": [...],
+            "mechanism": "CYP3A4 inhibition",
+            "clinical_effect": "Increased tacrolimus levels",
+            "recommendation": "Avoid grapefruit",
+            "confidence": 0.95,
+            "infrastructure": {...}
+        }
+    """
+    try:
+        data = request.get_json()
+
+        if not data or "medications" not in data:
+            return jsonify({"error": "Missing required field: medications"}), 400
+
+        medications = data.get("medications", [])
+        foods = data.get("foods")
+        supplements = data.get("supplements")
+        patient_id = data.get("patient_id")
+        patient_context = data.get("patient_context")
+
+        # Initialize DrugInteractionChecker agent
+        from services.agents.drug_interaction_agent import DrugInteractionCheckerAgent
+
+        checker_agent = DrugInteractionCheckerAgent()
+
+        # Check interactions
+        result = checker_agent.check_interaction(
+            medications=medications,
+            foods=foods,
+            supplements=supplements,
+            patient_id=patient_id,
+            patient_context=patient_context,
+        )
+
+        # Add infrastructure metadata
+        result["infrastructure"] = {
+            "platform": "Google Cloud Run",
+            "region": "us-central1",
+            "ai_system": "Google ADK Multi-Agent System",
+            "ai_model": "gemini-2.0-flash-exp",
+            "agent_used": "DrugInteractionChecker",
+        }
+
+        return jsonify(result), 200
+
+    except Exception as e:
+        app.logger.error(f"Drug interaction check error: {e}", exc_info=True)
+        return jsonify({"error": "Internal server error", "details": str(e)}), 500
+
+
 @app.route("/", methods=["GET"])
 def index():
     """Root endpoint - Landing page"""

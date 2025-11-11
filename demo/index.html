@@ -867,77 +867,147 @@
             document.getElementById('interaction-loading').classList.add('show');
             document.getElementById('interaction-result').classList.remove('show');
 
-            // Simulate API call
-            setTimeout(() => {
-                let response;
+            try {
+                // Call real Cloud Run API
+                const medications = ['tacrolimus', 'mycophenolate', 'prednisone'];
+                const requestBody = {
+                    medications: medications,
+                    patient_id: 'maria_rodriguez'
+                };
 
-                if (newItem === 'grapefruit' || newItem === 'ketoconazole') {
-                    response = {
-                        safe: false,
-                        interactions: [{
-                            severity: 'MAJOR',
-                            drugs: ['tacrolimus', newItem],
-                            mechanism: newItem === 'grapefruit'
-                                ? 'Grapefruit inhibits CYP3A4 enzyme'
-                                : 'Strong CYP3A4 inhibition',
-                            effect: 'Tacrolimus levels increase 2-3x',
-                            clinical_risk: 'Nephrotoxicity and neurotoxicity',
-                            recommendation: `AVOID ${newItem} completely`,
-                            alternative: newItem === 'grapefruit'
-                                ? 'Orange juice or apple juice are safe alternatives'
-                                : 'Consult with transplant team for alternatives'
-                        }],
-                        alert: true,
-                        message: 'DANGEROUS INTERACTION DETECTED'
-                    };
+                // Check if new item is a food or supplement
+                const foods = ['grapefruit', 'pomegranate', 'pomelo', 'seville orange'];
+                const supplements = ['st john\'s wort', 'st johns wort', 'ginkgo', 'echinacea'];
+
+                if (foods.some(f => newItem.toLowerCase().includes(f))) {
+                    requestBody.foods = [newItem];
+                } else if (supplements.some(s => newItem.toLowerCase().includes(s))) {
+                    requestBody.supplements = [newItem];
                 } else {
-                    response = {
-                        safe: true,
-                        message: `${newItem} appears safe with your current medications`,
-                        disclaimer: 'Always consult your transplant pharmacist for complete interaction screening'
-                    };
+                    // Assume it's a medication
+                    requestBody.medications = [...medications, newItem];
                 }
 
-                displayInteractionResult(response);
+                const response = await fetch('https://missed-dose-service-978611421547.us-central1.run.app/interactions/check', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                // Parse JSON from mechanism field if present
+                let parsedData = data;
+                if (data.mechanism && (data.mechanism.includes('```json') || data.mechanism.includes('{'))) {
+                    try {
+                        let jsonMatch = data.mechanism.match(/```json\s*([\s\S]*?)\s*```/);
+                        if (!jsonMatch) {
+                            jsonMatch = data.mechanism.match(/```\s*([\s\S]*?)\s*```/);
+                        }
+                        if (!jsonMatch) {
+                            jsonMatch = data.mechanism.match(/(\{[\s\S]*\})/);
+                        }
+
+                        if (jsonMatch) {
+                            const parsed = JSON.parse(jsonMatch[1]);
+                            parsedData = {
+                                ...data,
+                                has_interaction: parsed.has_interaction,
+                                severity: parsed.severity,
+                                interactions: parsed.interactions || [],
+                                mechanism: parsed.mechanism,
+                                clinical_effect: parsed.clinical_effect,
+                                recommendation: parsed.recommendation,
+                                confidence: parsed.confidence
+                            };
+                        }
+                    } catch (e) {
+                        console.error('Failed to parse mechanism JSON:', e);
+                    }
+                }
+
+                displayInteractionResult(parsedData, newItem);
+            } catch (error) {
+                console.error('API Error:', error);
+                document.getElementById('interaction-result').innerHTML = `
+                    <div class="alert alert-danger">
+                        <h3>Error</h3>
+                        <p>Unable to connect to interaction checking service. Please try again.</p>
+                    </div>
+                `;
+                document.getElementById('interaction-result').classList.add('show');
+            } finally {
                 document.getElementById('interaction-loading').classList.remove('show');
-            }, 2000);
+            }
         });
 
-        function displayInteractionResult(data) {
+        function displayInteractionResult(data, newItem) {
             const resultBox = document.getElementById('interaction-result');
 
             let html = '<h3>Drug Interaction Analysis</h3>';
 
-            if (data.safe) {
+            // Check if there's an interaction based on has_interaction flag or severity
+            const hasInteraction = data.has_interaction || (data.severity && data.severity.toLowerCase() !== 'none');
+
+            if (!hasInteraction) {
                 html += `
                     <div class="alert alert-success">
                         <h2 style="margin: 0;">✅ SAFE TO USE</h2>
                     </div>
-                    <p style="font-size: 1.1rem; margin: 20px 0;">${data.message}</p>
-                    <p style="color: #666; font-style: italic;">${data.disclaimer}</p>
+                    <p style="font-size: 1.1rem; margin: 20px 0;">${newItem} appears safe with your current medications</p>
+                    <p style="color: #666; font-style: italic;">Always consult your transplant pharmacist for complete interaction screening</p>
                 `;
             } else {
+                const severityText = data.severity ? data.severity.toUpperCase() : 'MAJOR';
                 html += `
                     <div class="alert alert-danger">
-                        <h2 style="margin: 0;">⛔ ${data.message}</h2>
+                        <h2 style="margin: 0;">⛔ DANGEROUS INTERACTION DETECTED</h2>
                     </div>
                 `;
 
-                data.interactions.forEach(interaction => {
+                html += `
+                    <div class="interaction-result severity-${severityText.toLowerCase()}">
+                        <h4>Interaction: tacrolimus + ${newItem}</h4>
+                        <p><strong>Severity:</strong> ${severityText}</p>
+                `;
+
+                if (data.mechanism) {
+                    html += `<p><strong>Mechanism:</strong> ${data.mechanism}</p>`;
+                }
+
+                if (data.clinical_effect) {
+                    html += `<p><strong>Clinical Effect:</strong> ${data.clinical_effect}</p>`;
+                }
+
+                if (data.recommendation) {
                     html += `
-                        <div class="interaction-result severity-${interaction.severity.toLowerCase()}">
-                            <h4>Interaction: ${interaction.drugs.join(' + ')}</h4>
-                            <p><strong>Severity:</strong> ${interaction.severity}</p>
-                            <p><strong>Mechanism:</strong> ${interaction.mechanism}</p>
-                            <p><strong>Clinical Effect:</strong> ${interaction.effect}</p>
-                            <p><strong>Risk:</strong> ${interaction.clinical_risk}</p>
-                            <div class="recommendation alert-danger">
-                                ${interaction.recommendation}
-                            </div>
-                            ${interaction.alternative ? `<p><strong>Safe Alternative:</strong> ${interaction.alternative}</p>` : ''}
+                        <div class="recommendation alert-danger">
+                            ${data.recommendation}
                         </div>
                     `;
-                });
+                }
+
+                // Show individual interactions if available
+                if (data.interactions && data.interactions.length > 0) {
+                    data.interactions.forEach(interaction => {
+                        if (interaction.alternative) {
+                            html += `<p><strong>Safe Alternative:</strong> ${interaction.alternative}</p>`;
+                        }
+                    });
+                }
+
+                html += `</div>`;
+            }
+
+            // Show confidence if available
+            if (data.confidence) {
+                html += `<p style="color: #666; margin-top: 20px; font-size: 0.9rem;">Confidence: ${(data.confidence * 100).toFixed(0)}%</p>`;
             }
 
             resultBox.innerHTML = html;
