@@ -10,7 +10,7 @@ repos:
     hooks:
       - id: ruff
         name: Lint Python code with Ruff
-        args: [--fix, --exit-non-zero-on-fix]
+        args: [--fix]  # Auto-fix issues without blocking commit
       - id: ruff-format
         name: Format Python code with Ruff
 
