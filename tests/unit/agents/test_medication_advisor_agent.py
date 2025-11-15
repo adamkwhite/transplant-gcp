@@ -22,8 +22,8 @@ def _async_generator_mock(text: str):
 class TestMedicationAdvisorAgent:
     """Test suite for MedicationAdvisorAgent."""
 
-    @patch("services.agents.medication_advisor_agent.Agent")
-    @patch("services.agents.medication_advisor_agent.types")
+    @patch("services.agents.base_adk_agent.Agent")
+    @patch("services.agents.base_adk_agent.types")
     def test_init_creates_agent_with_correct_config(
         self, mock_types: MagicMock, mock_agent_class: MagicMock
     ) -> None:
@@ -46,8 +46,8 @@ class TestMedicationAdvisorAgent:
             generate_content_config=mock_generate_config,
         )
 
-    @patch("services.agents.medication_advisor_agent.Agent")
-    @patch("services.agents.medication_advisor_agent.types")
+    @patch("services.agents.base_adk_agent.Agent")
+    @patch("services.agents.base_adk_agent.types")
     def test_init_uses_default_api_key(
         self, mock_types: MagicMock, mock_agent_class: MagicMock
     ) -> None:
@@ -58,14 +58,24 @@ class TestMedicationAdvisorAgent:
         # Assert - should use GEMINI_API_KEY from config
         assert agent.api_key is not None
 
-    @patch("services.agents.medication_advisor_agent.Runner")
-    @patch("services.agents.medication_advisor_agent.Agent")
-    @patch("services.agents.medication_advisor_agent.types")
+    @patch("services.agents.medication_advisor_agent.get_srtr_data")
+    @patch("services.agents.base_adk_agent.Runner")
+    @patch("services.agents.base_adk_agent.Agent")
+    @patch("services.agents.base_adk_agent.types")
     def test_analyze_missed_dose_calls_agent(
-        self, mock_types: MagicMock, mock_agent_class: MagicMock, mock_runner_class: MagicMock
+        self,
+        mock_types: MagicMock,
+        mock_agent_class: MagicMock,
+        mock_runner_class: MagicMock,
+        mock_get_srtr: MagicMock,
     ) -> None:
         """Test that analyze_missed_dose invokes the agent with correct prompt."""
         # Arrange
+        # Mock SRTR data
+        mock_srtr = MagicMock()
+        mock_srtr.format_for_prompt.return_value = "Population stats: 6.19% rejection rate"
+        mock_get_srtr.return_value = mock_srtr
+
         mock_runner_instance = MagicMock()
         mock_runner_class.return_value = mock_runner_instance
         mock_runner_instance.app_name = "MedicationAdvisor"
@@ -102,9 +112,9 @@ class TestMedicationAdvisorAgent:
         assert "next_steps" in result
         assert "agent_name" in result
 
-    @patch("services.agents.medication_advisor_agent.Runner")
-    @patch("services.agents.medication_advisor_agent.Agent")
-    @patch("services.agents.medication_advisor_agent.types")
+    @patch("services.agents.base_adk_agent.Runner")
+    @patch("services.agents.base_adk_agent.Agent")
+    @patch("services.agents.base_adk_agent.types")
     def test_analyze_missed_dose_without_optional_params(
         self, mock_types: MagicMock, mock_agent_class: MagicMock, mock_runner_class: MagicMock
     ) -> None:
@@ -140,8 +150,8 @@ class TestMedicationAdvisorAgent:
         """Test therapeutic window for tacrolimus."""
         # Arrange
         with (
-            patch("services.agents.medication_advisor_agent.Agent"),
-            patch("services.agents.medication_advisor_agent.types"),
+            patch("services.agents.base_adk_agent.Agent"),
+            patch("services.agents.base_adk_agent.types"),
         ):
             agent = MedicationAdvisorAgent(api_key="test_key")
 
@@ -157,8 +167,8 @@ class TestMedicationAdvisorAgent:
         """Test therapeutic window for mycophenolate."""
         # Arrange
         with (
-            patch("services.agents.medication_advisor_agent.Agent"),
-            patch("services.agents.medication_advisor_agent.types"),
+            patch("services.agents.base_adk_agent.Agent"),
+            patch("services.agents.base_adk_agent.types"),
         ):
             agent = MedicationAdvisorAgent(api_key="test_key")
 
@@ -174,8 +184,8 @@ class TestMedicationAdvisorAgent:
         """Test therapeutic window for prednisone."""
         # Arrange
         with (
-            patch("services.agents.medication_advisor_agent.Agent"),
-            patch("services.agents.medication_advisor_agent.types"),
+            patch("services.agents.base_adk_agent.Agent"),
+            patch("services.agents.base_adk_agent.types"),
         ):
             agent = MedicationAdvisorAgent(api_key="test_key")
 
@@ -191,8 +201,8 @@ class TestMedicationAdvisorAgent:
         """Test therapeutic window for unknown medication returns default."""
         # Arrange
         with (
-            patch("services.agents.medication_advisor_agent.Agent"),
-            patch("services.agents.medication_advisor_agent.types"),
+            patch("services.agents.base_adk_agent.Agent"),
+            patch("services.agents.base_adk_agent.types"),
         ):
             agent = MedicationAdvisorAgent(api_key="test_key")
 
@@ -208,8 +218,8 @@ class TestMedicationAdvisorAgent:
         """Test that medication names are case-insensitive."""
         # Arrange
         with (
-            patch("services.agents.medication_advisor_agent.Agent"),
-            patch("services.agents.medication_advisor_agent.types"),
+            patch("services.agents.base_adk_agent.Agent"),
+            patch("services.agents.base_adk_agent.types"),
         ):
             agent = MedicationAdvisorAgent(api_key="test_key")
 
@@ -222,13 +232,19 @@ class TestMedicationAdvisorAgent:
         assert window1 == window2 == window3
         assert window1["window_hours"] == 12
 
-    @patch("services.agents.medication_advisor_agent.Agent")
-    @patch("services.agents.medication_advisor_agent.types")
+    @patch("services.agents.medication_advisor_agent.get_srtr_data")
+    @patch("services.agents.base_adk_agent.Agent")
+    @patch("services.agents.base_adk_agent.types")
     def test_build_missed_dose_prompt_includes_all_params(
-        self, mock_types: MagicMock, mock_agent_class: MagicMock
+        self, mock_types: MagicMock, mock_agent_class: MagicMock, mock_get_srtr: MagicMock
     ) -> None:
         """Test that prompt builder includes all provided parameters."""
         # Arrange
+        # Mock SRTR data
+        mock_srtr = MagicMock()
+        mock_srtr.format_for_prompt.return_value = "Population stats: 6.19% rejection rate"
+        mock_get_srtr.return_value = mock_srtr
+
         mock_agent_instance = MagicMock()
         mock_agent_class.return_value = mock_agent_instance
 
@@ -251,8 +267,8 @@ class TestMedicationAdvisorAgent:
         assert "transplant_date" in prompt
         assert "JSON response" in prompt
 
-    @patch("services.agents.medication_advisor_agent.Agent")
-    @patch("services.agents.medication_advisor_agent.types")
+    @patch("services.agents.base_adk_agent.Agent")
+    @patch("services.agents.base_adk_agent.types")
     def test_parse_agent_response_returns_structured_format(
         self, mock_types: MagicMock, mock_agent_class: MagicMock
     ) -> None:

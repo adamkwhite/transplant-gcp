@@ -2,7 +2,7 @@
 
 **Project**: ADK Multi-Agent System Migration
 **Deadline**: November 10, 2025
-**Last Updated**: 2025-10-30
+**Last Updated**: 2025-11-09
 
 ## Completed Tasks ✅
 
@@ -19,9 +19,29 @@
 - ✅ Reduced CI runtime from 16+ minutes (timeout) to ~1 minute
 - ✅ Merged PR #6 - All infrastructure issues resolved
 
+### Issue #22: Real Rejection Detection with SRTR Data (PR #23)
+- ✅ Created RejectionRiskAgent with SRTR population data integration
+- ✅ Implemented `/rejection/analyze` API endpoint on Cloud Run
+- ✅ Replaced frontend mock with real API calls
+- ✅ Added 6 unit tests for RejectionRiskAgent (95% coverage)
+- ✅ Created BaseADKAgent to reduce code duplication (10.32% → 7.9%)
+- ✅ Refactored MedicationAdvisorAgent to use BaseADKAgent
+- ✅ Fixed integration tests for 4 specialist agents
+- ✅ Deployed to Cloud Run (revision missed-dose-service-00021-2vl)
+- ✅ Updated frontend on Netlify
+- ✅ Merged PR #23 - 156 tests passing
+
+### Task 2.0: Implement Core Agent Classes (Partial)
+- ✅ MedicationAdvisor Agent (missed dose analysis) - COMPLETED
+- ✅ RejectionRisk Agent (rejection detection with SRTR data) - COMPLETED
+- ✅ BaseADK Agent (common patterns extracted) - COMPLETED
+- ⏸️ Coordinator Agent (routing logic) - DEFERRED
+- ⏸️ SymptomMonitor Agent (general symptom monitoring) - DEFERRED
+- ⏸️ DrugInteractionChecker Agent (interaction analysis) - DEFERRED
+
 ## In Progress 🚧
 
-None - Ready to start Task 2.0
+None - All current features complete and deployed
 
 ## Pending Tasks 📋
 

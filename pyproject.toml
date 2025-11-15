@@ -40,6 +40,11 @@ Documentation = "https://github.com/adam/transplant-gcp"
 Repository = "https://github.com/adam/transplant-gcp"
 Issues = "https://github.com/adam/transplant-gcp/issues"
 
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["services*"]
+exclude = ["tests*", "scripts*"]
+
 # === RUFF CONFIGURATION ===
 [tool.ruff]
 line-length = 100
@@ -95,6 +100,7 @@ exclude = [
     "build/",
     "dist/",
     "services/missed-dose/",  # Legacy service directory with duplicate modules
+    "scripts/",  # Utility scripts - not production code
 ]
 
 # Per-module options

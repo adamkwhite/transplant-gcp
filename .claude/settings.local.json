@@ -19,7 +19,16 @@
       "Bash(gh pr checks:*)",
       "mcp__sonarcloud__get_project_quality_gate_status",
       "Bash(python -m pytest:*)",
-      "Bash(pytest:*)"
+      "Bash(pytest:*)",
+      "Bash(docker build:*)",
+      "Bash(pip freeze:*)",
+      "Bash(gcloud builds list:*)",
+      "Bash(./deploy.sh:*)",
+      "Bash(tee:*)",
+      "Bash(curl:*)",
+      "Bash(gcloud run services logs read:*)",
+      "Bash(gcloud run services update:*)",
+      "Bash(npx -p @mermaid-js/mermaid-cli mmdc:*)"
     ],
     "deny": [],
     "ask": []

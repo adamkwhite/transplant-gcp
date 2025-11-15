@@ -1,6 +1,6 @@
 """
 Cloud Run Service: Missed Dose Analysis
-Uses Google Gemini for real AI medical reasoning
+Uses Google ADK Multi-Agent System for AI medical reasoning
 """
 
 import logging
@@ -8,16 +8,25 @@ import os
 import sys
 from datetime import datetime, timedelta
 
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, render_template, request
 from flask_cors import CORS
 from google.cloud import firestore
+from werkzeug.exceptions import BadRequest
 
-# Add parent directory to path to import gemini_client
+# Add parent directory to path to import ADK agents
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from gemini_client import get_gemini_client
+from services.agents.coordinator_agent import TransplantCoordinatorAgent
+from services.agents.drug_interaction_agent import DrugInteractionCheckerAgent
+from services.agents.medication_advisor_agent import MedicationAdvisorAgent
+from services.agents.rejection_risk_agent import RejectionRiskAgent
+from services.agents.symptom_monitor_agent import SymptomMonitorAgent
 
 # Constants
 PLATFORM_NAME = "Google Cloud Run"
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -26,12 +35,21 @@ CORS(app)
 # Initialize Firestore
 db = firestore.Client(project=os.environ.get("GOOGLE_CLOUD_PROJECT", "transplant-prediction"))
 
-# Initialize Gemini client
-gemini = get_gemini_client()
+# Initialize ADK agents
+api_key = os.environ.get("GEMINI_API_KEY")
+if not api_key:
+    logger.warning("GEMINI_API_KEY not set - agents will use config default")
 
-# Configure logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+medication_advisor = MedicationAdvisorAgent(api_key=api_key)
+rejection_risk = RejectionRiskAgent(api_key=api_key)
+symptom_monitor = SymptomMonitorAgent(api_key=api_key)
+drug_interaction_checker = DrugInteractionCheckerAgent(api_key=api_key)
+coordinator = TransplantCoordinatorAgent(
+    api_key=api_key,
+    medication_advisor=medication_advisor,
+    symptom_monitor=symptom_monitor,
+    drug_interaction_checker=drug_interaction_checker,
+)
 
 
 def find_medication(name):
@@ -46,18 +64,31 @@ def find_medication(name):
             "half_life": "12 hours",
             "interactions": ["grapefruit", "ketoconazole", "erythromycin"],
         },
+        "cyclosporine": {
+            "name": "Cyclosporine",
+            "category": "calcineurin_inhibitor",
+            "time_window_hours": 12,
+            "critical": True,
+            "target_levels": "100-400 ng/mL",
+            "half_life": "8-27 hours",
+            "interactions": ["grapefruit", "St. John's Wort", "clarithromycin"],
+        },
         "mycophenolate": {
             "name": "Mycophenolate",
             "category": "antiproliferative",
             "time_window_hours": 12,
             "critical": True,
             "target_levels": "1-3.5 mg/L",
+            "half_life": "16-18 hours",
+            "interactions": ["antacids", "cholestyramine", "magnesium"],
         },
         "prednisone": {
             "name": "Prednisone",
             "category": "corticosteroid",
             "time_window_hours": 24,
             "critical": False,
+            "half_life": "3-4 hours",
+            "interactions": ["NSAIDs", "warfarin"],
         },
     }
     return medications.get(name.lower())
@@ -114,6 +145,76 @@ def calculate_adherence(patient_id):
     return 0.8, 0
 
 
+def normalize_rejection_symptoms(raw_symptoms: dict) -> dict:
+    """
+    Normalize symptom data to match RejectionRiskAgent expected format.
+
+    Handles multiple input formats:
+    - Frontend format: fever: true, fever_temperature: 101.5
+    - Direct format: fever: 101.5
+
+    Returns normalized format expected by agent:
+    - fever: <temperature in °F>
+    - weight_gain: <lbs gained>
+    - fatigue: <description>
+    - urine_output: <description>
+    """
+    normalized = {}
+
+    # Handle fever (can be boolean + temperature, or just temperature)
+    if "fever_temperature" in raw_symptoms:
+        normalized["fever"] = raw_symptoms["fever_temperature"]
+    elif "fever" in raw_symptoms:
+        fever_val = raw_symptoms["fever"]
+        # If fever is boolean True and no temperature, assume mild fever
+        if fever_val is True:
+            normalized["fever"] = 99.5
+        elif isinstance(fever_val, int | float):
+            normalized["fever"] = fever_val
+        # If fever is False or missing, don't include it
+
+    # Handle weight gain
+    if "weight_gain" in raw_symptoms:
+        normalized["weight_gain"] = raw_symptoms["weight_gain"]
+    elif "weight_gain_lbs" in raw_symptoms:
+        normalized["weight_gain"] = raw_symptoms["weight_gain_lbs"]
+
+    # Handle fatigue (convert boolean to description)
+    if "fatigue" in raw_symptoms:
+        fatigue_val = raw_symptoms["fatigue"]
+        if fatigue_val is True:
+            normalized["fatigue"] = "moderate"
+        elif fatigue_val is False:
+            normalized["fatigue"] = "none"
+        else:
+            normalized["fatigue"] = fatigue_val
+    elif "fatigue_level" in raw_symptoms:
+        normalized["fatigue"] = raw_symptoms["fatigue_level"]
+
+    # Handle urine output (convert boolean to description)
+    if "decreased_urine_output" in raw_symptoms:
+        if raw_symptoms["decreased_urine_output"] is True:
+            normalized["urine_output"] = "decreased"
+        elif raw_symptoms["decreased_urine_output"] is False:
+            normalized["urine_output"] = "normal"
+    elif "urine_output" in raw_symptoms:
+        urine_val = raw_symptoms["urine_output"]
+        if urine_val is True:
+            normalized["urine_output"] = "decreased"
+        elif urine_val is False:
+            normalized["urine_output"] = "normal"
+        else:
+            normalized["urine_output"] = urine_val
+
+    # Pass through any other symptom fields directly
+    other_fields = ["tenderness", "swelling", "pain", "nausea"]
+    for field in other_fields:
+        if field in raw_symptoms:
+            normalized[field] = raw_symptoms[field]
+
+    return normalized
+
+
 def record_interaction(patient_id, interaction_type, data):
     """Record interaction to Firestore"""
     try:
@@ -139,17 +240,57 @@ def health_check():
             "status": "healthy",
             "service": "missed-dose-analysis",
             "platform": PLATFORM_NAME,
-            "ai_model": "Gemini 2.0 Flash" if os.environ.get("GEMINI_API_KEY") else "Mock Mode",
+            "ai_system": "Google ADK Multi-Agent System",
+            "agents": {
+                "coordinator": "TransplantCoordinator",
+                "specialists": [
+                    "MedicationAdvisor",
+                    "RejectionRiskAnalyzer",
+                    "SymptomMonitor",
+                    "DrugInteractionChecker",
+                ],
+            },
+            "ai_model": "gemini-2.0-flash-exp",
+            "adk_version": "1.17.0",
         }
     )
+
+
+@app.errorhandler(400)
+def handle_bad_request(e):
+    """Handle malformed JSON and bad requests"""
+    return jsonify({"error": "Invalid request", "message": str(e)}), 400
 
 
 @app.route("/medications/missed-dose", methods=["POST"])
 def missed_dose():
     """Analyze missed medication dose with Gemini AI"""
     try:
-        # Parse request
-        data = request.get_json()
+        # Parse and validate request
+        try:
+            data = request.get_json()
+        except BadRequest:
+            return jsonify({"error": "Invalid JSON - request body must be valid JSON"}), 400
+
+        if data is None:
+            return jsonify({"error": "Invalid JSON - request body must be valid JSON"}), 400
+
+        # Validate required fields
+        required_fields = ["medication", "scheduled_time", "current_time", "patient_id"]
+        missing_fields = [field for field in required_fields if not data.get(field)]
+
+        if missing_fields:
+            return (
+                jsonify(
+                    {
+                        "error": "Missing required fields",
+                        "missing": missing_fields,
+                        "required": required_fields,
+                    }
+                ),
+                400,
+            )
+
         medication_name = data.get("medication", "").lower()
         scheduled_time = data.get("scheduled_time", "")
         current_time = data.get("current_time", "")
@@ -169,10 +310,50 @@ def missed_dose():
         # Get medication info
         medication = find_medication(medication_name)
         if not medication:
-            return jsonify({"error": f"Medication {medication_name} not found"}), 404
+            # Handle unknown medications gracefully
+            logger.warning(f"Unknown medication requested: {medication_name}")
+            return (
+                jsonify(
+                    {
+                        "recommendation": f"Medication '{medication_name}' is not in our database. Please contact your transplant team immediately for guidance on this medication.",
+                        "risk_level": "unknown",
+                        "confidence": 0.0,
+                        "medication_details": {
+                            "name": medication_name.capitalize(),
+                            "category": "unknown",
+                            "critical": None,
+                        },
+                        "next_steps": [
+                            "Contact your transplant team",
+                            "Have your medication list ready",
+                            "Do not skip doses without medical advice",
+                        ],
+                        "infrastructure": {
+                            "platform": PLATFORM_NAME,
+                            "database": "Firestore",
+                            "ai_system": "Google ADK Multi-Agent System",
+                            "ai_model": "gemini-2.0-flash-exp",
+                            "agent_used": "MedicationAdvisor",
+                            "region": os.environ.get("REGION", "us-central1"),
+                        },
+                    }
+                ),
+                200,
+            )
 
-        # Get patient context
-        patient_context = get_patient_context(patient_id)
+        # Get patient context - use request data if provided, otherwise look up from Firestore
+        request_context = data.get("patient_context", {})
+
+        if request_context:
+            # Use context from request (e.g., from web demo with organ selection)
+            patient_context = request_context.copy()
+            # Map organ_type to transplant_type for consistency
+            if "organ_type" in patient_context:
+                patient_context["transplant_type"] = patient_context.pop("organ_type")
+        else:
+            # Look up from Firestore
+            patient_context = get_patient_context(patient_id)
+
         adherence_rate, missed_this_week = calculate_adherence(patient_id)
 
         patient_context.update(
@@ -180,20 +361,26 @@ def missed_dose():
                 "hours_late": hours_late,
                 "missed_this_week": missed_this_week,
                 "adherence_rate": adherence_rate,
+                "transplant_type": patient_context.get("transplant_type", "kidney"),
+                "months_post_transplant": patient_context.get("months_post_transplant", 6),
             }
         )
 
-        # Get AI-powered recommendation from Gemini
-        gemini_response = gemini.analyze_missed_dose(
-            medication=medication["name"], hours_late=hours_late, patient_context=patient_context
+        # Get AI-powered recommendation from ADK MedicationAdvisor agent
+        agent_response = medication_advisor.analyze_missed_dose(
+            medication=medication["name"],
+            scheduled_time=scheduled_time,
+            current_time=current_time,
+            patient_id=patient_id,
+            patient_context=patient_context,
         )
 
-        # Enhance message with context
+        # Enhance response with context-based risk assessment
         if medication["critical"] and hours_late > medication["time_window_hours"]:
-            gemini_response["risk_level"] = "high"
+            agent_response["risk_level"] = "high"
 
         if missed_this_week >= 3:
-            gemini_response["risk_level"] = "critical"
+            agent_response["risk_level"] = "critical"
 
         # Record interaction
         record_interaction(
@@ -202,19 +389,19 @@ def missed_dose():
             {
                 "medication": medication_name,
                 "hours_late": hours_late,
-                "recommendation": gemini_response.get("recommendation", ""),
-                "ai_model": gemini_response.get("ai_model", "gemini"),
-                "risk_level": gemini_response.get("risk_level", "medium"),
+                "recommendation": agent_response.get("recommendation", ""),
+                "ai_system": "ADK MedicationAdvisor",
+                "risk_level": agent_response.get("risk_level", "medium"),
             },
         )
 
-        # Build response
+        # Build response (maintain backward compatibility with existing API format)
         response = {
-            "recommendation": gemini_response.get("recommendation", "Contact doctor"),
-            "reasoning_chain": gemini_response.get("reasoning_steps", []),
-            "risk_level": gemini_response.get("risk_level", "medium"),
-            "confidence": gemini_response.get("confidence", 0.85),
-            "next_steps": gemini_response.get("next_steps", []),
+            "recommendation": agent_response.get("recommendation", "Contact doctor"),
+            "reasoning_chain": agent_response.get("reasoning_steps", []),
+            "risk_level": agent_response.get("risk_level", "medium"),
+            "confidence": agent_response.get("confidence", 0.85),
+            "next_steps": agent_response.get("next_steps", []),
             "adherence_metrics": {
                 "current_rate": f"{round(adherence_rate * 100)}%",
                 "doses_missed_this_week": missed_this_week,
@@ -223,7 +410,9 @@ def missed_dose():
             "infrastructure": {
                 "platform": PLATFORM_NAME,
                 "database": "Firestore",
-                "ai_model": gemini_response.get("ai_model", "gemini-2.0-flash"),
+                "ai_system": "Google ADK Multi-Agent System",
+                "ai_model": "gemini-2.0-flash-exp",
+                "agent_used": "MedicationAdvisor",
                 "region": os.environ.get("REGION", "us-central1"),
             },
         }
@@ -235,17 +424,160 @@ def missed_dose():
         return jsonify({"error": str(e)}), 500
 
 
+@app.route("/rejection/analyze", methods=["POST"])
+def analyze_rejection_risk():
+    """Analyze transplant rejection risk based on symptoms"""
+    try:
+        # Parse and validate request
+        try:
+            data = request.get_json()
+        except BadRequest:
+            return jsonify({"error": "Invalid JSON - request body must be valid JSON"}), 400
+
+        if data is None:
+            return jsonify({"error": "Invalid JSON - request body must be valid JSON"}), 400
+
+        # Validate required fields
+        required_fields = ["symptoms"]
+        missing_fields = [field for field in required_fields if not data.get(field)]
+
+        if missing_fields:
+            return (
+                jsonify(
+                    {
+                        "error": "Missing required fields",
+                        "missing": missing_fields,
+                        "required": required_fields,
+                    }
+                ),
+                400,
+            )
+
+        symptoms = data.get("symptoms", {})
+        patient_id = data.get("patient_id", "demo_patient")
+        patient_context = data.get("patient_context")
+
+        # Normalize symptom data to agent's expected format
+        normalized_symptoms = normalize_rejection_symptoms(symptoms)
+
+        # Get AI-powered rejection risk analysis from ADK RejectionRiskAgent
+        agent_response = rejection_risk.analyze_rejection_risk(
+            symptoms=normalized_symptoms, patient_id=patient_id, patient_context=patient_context
+        )
+
+        # Record interaction
+        record_interaction(
+            patient_id,
+            "rejection_analysis",
+            {
+                "symptoms": symptoms,
+                "rejection_probability": agent_response.get("rejection_probability", 0.0),
+                "urgency": agent_response.get("urgency", "MEDIUM"),
+                "ai_system": "ADK RejectionRiskAnalyzer",
+                "risk_level": agent_response.get("risk_level", "medium"),
+            },
+        )
+
+        # Build response
+        response = {
+            "rejection_probability": agent_response.get("rejection_probability", 0.75),
+            "urgency": agent_response.get("urgency", "HIGH"),
+            "risk_level": agent_response.get("risk_level", "critical"),
+            "recommended_action": agent_response.get(
+                "recommended_action", "Contact transplant team immediately"
+            ),
+            "reasoning_steps": agent_response.get("reasoning_steps", []),
+            "similar_cases": agent_response.get("similar_cases", []),
+            "infrastructure": {
+                "platform": PLATFORM_NAME,
+                "database": "Firestore",
+                "ai_system": "Google ADK Multi-Agent System",
+                "ai_model": "gemini-2.0-flash-exp",
+                "agent_used": "RejectionRiskAnalyzer",
+                "region": os.environ.get("REGION", "us-central1"),
+            },
+        }
+
+        return jsonify(response)
+
+    except Exception as e:
+        logger.error(f"Error in analyze_rejection_risk: {e}")
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/interactions/check", methods=["POST"])
+def check_drug_interactions():
+    """
+    Drug Interaction Checking endpoint.
+
+    Analyzes drug-drug, drug-food, and drug-supplement interactions.
+
+    Request body:
+        {
+            "medications": ["tacrolimus", "ibuprofen"],
+            "foods": ["grapefruit"],  # Optional
+            "supplements": ["st john's wort"],  # Optional
+            "patient_id": "maria_rodriguez"  # Optional
+        }
+
+    Returns:
+        {
+            "has_interaction": true,
+            "severity": "severe",
+            "interactions": [...],
+            "mechanism": "CYP3A4 inhibition",
+            "clinical_effect": "Increased tacrolimus levels",
+            "recommendation": "Avoid grapefruit",
+            "confidence": 0.95,
+            "infrastructure": {...}
+        }
+    """
+    try:
+        data = request.get_json()
+
+        if not data or "medications" not in data:
+            return jsonify({"error": "Missing required field: medications"}), 400
+
+        medications = data.get("medications", [])
+        foods = data.get("foods")
+        supplements = data.get("supplements")
+        patient_id = data.get("patient_id")
+        patient_context = data.get("patient_context")
+
+        # Initialize DrugInteractionChecker agent
+        from services.agents.drug_interaction_agent import DrugInteractionCheckerAgent
+
+        checker_agent = DrugInteractionCheckerAgent()
+
+        # Check interactions
+        result = checker_agent.check_interaction(
+            medications=medications,
+            foods=foods,
+            supplements=supplements,
+            patient_id=patient_id,
+            patient_context=patient_context,
+        )
+
+        # Add infrastructure metadata
+        result["infrastructure"] = {
+            "platform": "Google Cloud Run",
+            "region": "us-central1",
+            "ai_system": "Google ADK Multi-Agent System",
+            "ai_model": "gemini-2.0-flash-exp",
+            "agent_used": "DrugInteractionChecker",
+        }
+
+        return jsonify(result), 200
+
+    except Exception as e:
+        app.logger.error(f"Drug interaction check error: {e}", exc_info=True)
+        return jsonify({"error": "Internal server error", "details": str(e)}), 500
+
+
 @app.route("/", methods=["GET"])
 def index():
-    """Root endpoint"""
-    return jsonify(
-        {
-            "service": "Transplant Medication Adherence - Missed Dose Analysis",
-            "version": "1.0",
-            "platform": PLATFORM_NAME,
-            "endpoints": ["/health", "/medications/missed-dose"],
-        }
-    )
+    """Root endpoint - Landing page"""
+    return render_template("index.html")
 
 
 if __name__ == "__main__":

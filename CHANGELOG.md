@@ -7,16 +7,112 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### In Progress
-- Task 2.0: Implement Core Agent Classes (4 ADK agents)
-- Task 3.0: Build Multi-Agent Communication Layer
-- Task 4.0: Create Backward-Compatible REST API
-- Task 5.0: Deploy agents to Cloud Run
-- Task 6.0: Testing and Validation
-- Task 7.0: Documentation and Demo Preparation
+## [1.2.0] - 2025-11-09
 
-### Completed
-- Task 1.0: Install and configure Google ADK ✅
+### Added
+- **Real Rejection Detection with AI (Issue #22, PR #23)** - Replaced mock JavaScript with production RejectionRiskAgent
+  - New `services/agents/rejection_risk_agent.py` - Specialized ADK agent for transplant rejection analysis
+  - Integrates SRTR (Scientific Registry of Transplant Recipients) population data
+  - Analyzes symptoms: fever, weight gain, fatigue, urine output
+  - Returns rejection probability (0.0-1.0), urgency level (LOW/MEDIUM/HIGH/CRITICAL), risk assessment, and clinical recommendations
+  - Generates similar patient cases based on SRTR statistics (11,709+ kidney recipients)
+  - Added to agent configuration in `services/config/adk_config.py`
+
+- **New API Endpoint**: `POST /rejection/analyze` on Cloud Run
+  - Accepts symptom data (`fever`, `weight_gain`, `fatigue`, `urine_output`) and patient context
+  - Returns AI-powered rejection risk analysis with SRTR population baselines
+  - Includes SRTR data source attribution (source, organ type, age group, baseline rejection rate, total records)
+  - Follows same infrastructure pattern as `/medications/missed-dose`
+
+- **BaseADKAgent Refactoring** - Extracted common ADK patterns to reduce code duplication
+  - New `services/agents/base_adk_agent.py` - Base class for all ADK agents (133 lines)
+  - Provides shared initialization (Agent, Runner, InMemorySessionService)
+  - Common `_invoke_agent()` method for async execution
+  - Common `_parse_agent_response()` stub for subclasses to override
+  - Reduced code duplication from 10.32% to 7.9% (23% improvement)
+
+- **Frontend Rejection Detection** - Real API integration in `demo/index.html`
+  - Replaced 2.5-second mock delay with actual API calls to Cloud Run
+  - Added SRTR data source display in UI showing:
+    - Source: SRTR 2023 Annual Data Report
+    - Organ type and age group
+    - Population baseline rejection rates
+    - Total records in database (e.g., "11,709 kidney transplant recipients")
+  - Dynamic symptom capture from form inputs
+
+- **Comprehensive Test Coverage**
+  - New `tests/unit/agents/test_rejection_risk_agent.py` - 6 unit tests, 95% coverage
+  - Tests: agent initialization, config validation, SRTR integration, prompt building, response parsing
+  - Updated `tests/integration/test_cloud_run_deployment.py` - Fixed to expect 4 specialist agents (was 3)
+  - All 156 tests passing (17 skipped, 1 transient Gemini API 503 error)
+
+### Changed
+- **MedicationAdvisorAgent** - Refactored to inherit from BaseADKAgent
+  - Removed duplicated `__init__` boilerplate (agent/runner creation)
+  - Removed duplicated async session management code (~35 lines)
+  - Uses base class `_invoke_agent()` instead of local async function
+  - Maintains agent-specific `_build_missed_dose_prompt()` and `_parse_agent_response()`
+
+- **RejectionRiskAgent** - Inherits from BaseADKAgent
+  - Follows same refactoring pattern as MedicationAdvisorAgent
+  - Agent-specific `_build_rejection_prompt()` with SRTR data integration
+  - Agent-specific `_parse_agent_response()` for structured output
+
+- **Health Endpoint** - Now shows all 4 specialist agents in `/health` response:
+  - MedicationAdvisor
+  - **RejectionRiskAnalyzer** (NEW)
+  - SymptomMonitor
+  - DrugInteractionChecker
+
+- **Root Endpoint** - Updated to list new `/rejection/analyze` endpoint
+
+- **Test Mocks** - Updated to patch base_adk_agent module
+  - All `@patch` decorators in test files now point to `services.agents.base_adk_agent.*`
+  - Updated: `test_medication_advisor_agent.py` (11 tests)
+  - Updated: `test_rejection_risk_agent.py` (6 tests)
+  - Fixes AttributeError after refactoring (agents no longer import Agent/types/Runner directly)
+
+### Fixed
+- **Integration Test** - `test_health_shows_all_agents` now expects 4 specialists instead of 3
+- **Code Duplication** - Reduced from 10.32% to 7.9% (23% improvement, SonarCloud)
+- **Type Safety** - Added return type annotation `-> str` to `_run_agent()` async function in BaseADKAgent
+
+### Deployment
+- **Cloud Run**: Deployed revision `missed-dose-service-00021-2vl`
+  - Service URL: https://missed-dose-service-64rz4skmdq-uc.a.run.app
+  - New endpoint: `/rejection/analyze`
+  - Updated health check to show 4 agents
+  - Region: us-central1
+
+- **Netlify**: Updated frontend with real rejection detection
+  - Live URL: https://transplant-medication-demo.netlify.app/
+  - Act 2: Rejection Detection now uses real AI instead of mock data
+
+### Technical Debt
+- **SonarCloud Duplication**: 7.9% exceeds 3% threshold
+  - SRTR integration logic still duplicated between RejectionRiskAgent and MedicationAdvisorAgent
+  - Both agents have similar try/except blocks for SRTR data retrieval
+  - Both agents format SRTR statistics for prompts in similar ways
+  - Trade-off accepted for clearer agent-specific code and maintainability
+  - Could extract to shared utility method in future if duplication increases
+
+### Performance
+- **Test Suite**: 156 tests passed in ~3m57s
+- **Coverage**: 94.8% (up from 95.0% - slight decrease due to new agent code)
+- **Lint**: ✅ Ruff (10s)
+- **Security**: ✅ Bandit (1m1s)
+- **Type Check**: ✅ mypy (1m23s)
+
+### Pull Requests
+- **PR #23**: "feat: Add real rejection detection with SRTR data integration"
+  - 6 commits: agent implementation, tests, API endpoint, frontend, base class refactoring, test fixes
+  - Review: All CI/CD checks passed
+  - Merged: Squash and merge to main
+  - Branch deleted: `feature/add-srtr-data-citations`
+
+### Contributors
+- Adam White (adamkwhite)
+- Claude AI (Claude Code - code generation and assistance)
 
 ## [1.1.0] - 2025-10-30
 

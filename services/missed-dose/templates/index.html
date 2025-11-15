@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TransplantGuard AI - Multi-Agent Medical Guidance System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-content">
+                <h1>🏥 TransplantGuard AI</h1>
+                <p class="subtitle">Multi-Agent Medical Guidance System</p>
+                <div class="status-badge">
+                    <span class="status-dot"></span>
+                    Live on Google Cloud Run
+                </div>
+            </div>
+        </header>
+
+        <section class="hero">
+            <h2>AI-Powered Support for Transplant Patients</h2>
+            <p class="hero-description">
+                Five specialized AI agents working together to provide instant, expert-level medical guidance—
+                powered by Google ADK, Gemini 2.0 Flash, and deployed on Cloud Run.
+            </p>
+        </section>
+
+        <section class="agents-grid">
+            <h3>Our AI Medical Team</h3>
+            <div class="agents">
+                <div class="agent-card coordinator">
+                    <div class="agent-icon">🎯</div>
+                    <h4>Coordinator</h4>
+                    <p>Intelligent routing to appropriate specialists</p>
+                </div>
+                <div class="agent-card">
+                    <div class="agent-icon">💊</div>
+                    <h4>Medication Advisor</h4>
+                    <p>Missed dose timing and adherence guidance</p>
+                </div>
+                <div class="agent-card">
+                    <div class="agent-icon">🩺</div>
+                    <h4>Symptom Monitor</h4>
+                    <p>Rejection risk assessment from symptoms</p>
+                </div>
+                <div class="agent-card">
+                    <div class="agent-icon">⚠️</div>
+                    <h4>Drug Interaction</h4>
+                    <p>Safety checking for medications and foods</p>
+                </div>
+                <div class="agent-card">
+                    <div class="agent-icon">📊</div>
+                    <h4>Rejection Risk</h4>
+                    <p>Evidence-based analysis with SRTR data</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="tech-stack">
+            <h3>Technology Stack</h3>
+            <div class="tech-badges">
+                <span class="tech-badge google">Google Cloud Run</span>
+                <span class="tech-badge google">Google ADK</span>
+                <span class="tech-badge google">Gemini 2.0 Flash</span>
+                <span class="tech-badge google">Firestore</span>
+                <span class="tech-badge">Python 3.12</span>
+                <span class="tech-badge">Flask</span>
+            </div>
+        </section>
+
+        <section class="api-section">
+            <h3>API Endpoints</h3>
+            <div class="endpoints">
+                <div class="endpoint">
+                    <div class="method get">GET</div>
+                    <code>/health</code>
+                    <p>Check system health and agent status</p>
+                </div>
+                <div class="endpoint">
+                    <div class="method post">POST</div>
+                    <code>/medications/missed-dose</code>
+                    <p>Analyze missed medication doses</p>
+                </div>
+                <div class="endpoint">
+                    <div class="method post">POST</div>
+                    <code>/rejection/analyze</code>
+                    <p>Assess rejection risk from symptoms</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="stats">
+            <div class="stat-card">
+                <div class="stat-number">5</div>
+                <div class="stat-label">AI Agents</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">2-3s</div>
+                <div class="stat-label">Response Time</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">156</div>
+                <div class="stat-label">Tests Passing</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">94.8%</div>
+                <div class="stat-label">Code Coverage</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">3</div>
+                <div class="stat-label">Architectures Evaluated</div>
+            </div>
+        </section>
+
+        <p style="text-align: center; margin-top: 1.5rem; padding: 0 2rem; font-size: 0.9rem; color: #5f6368; background: var(--card-bg); padding-top: 1rem; padding-bottom: 2rem;">
+            Evaluated Pub/Sub, In-Process, and ADK patterns before selecting Google ADK sub-agents.
+            <a href="https://github.com/adamkwhite/transplant-gcp/tree/main/docs/architecture" target="_blank" style="color: #1967d2; text-decoration: none; font-weight: 500;">View comparison →</a>
+        </p>
+
+        <section class="cta-section">
+            <h3>Try It Out</h3>
+
+            <div style="text-align: center; margin-bottom: 2rem; margin-top: 1.5rem;">
+                <a href="https://transplant-medication-demo.netlify.app/" class="button primary" target="_blank" style="display: inline-block;">
+                    🌐 Try Interactive Web Demo
+                </a>
+                <p style="margin-top: 0.75rem; font-size: 0.9rem; color: #5f6368;">
+                    Or use the curl commands below to test the API directly
+                </p>
+            </div>
+
+            <h4 style="margin-top: 1.5rem; margin-bottom: 0.5rem; color: #1967d2;">1. Missed Dose Analysis</h4>
+            <p>Test the medication advisor agent - analyzes timing and provides guidance:</p>
+            <div class="code-block">
+                <code>curl -X POST https://missed-dose-service-64rz4skmdq-uc.a.run.app/medications/missed-dose \
+  -H "Content-Type: application/json" \
+  -d '{"medication":"tacrolimus","scheduled_time":"8:00 AM","current_time":"2:00 PM","patient_id":"demo_patient"}'</code>
+            </div>
+            <p style="margin-top: 0.5rem; font-size: 0.85rem; color: #5f6368;">
+                Response includes: AI reasoning • Medical recommendation • Risk assessment • SRTR data • Next steps
+            </p>
+
+            <h4 style="margin-top: 2rem; margin-bottom: 0.5rem; color: #1967d2;">2. Rejection Risk Analysis</h4>
+            <p>Test the rejection risk agent - evaluates symptoms using real SRTR transplant outcomes data:</p>
+            <div class="code-block">
+                <code>curl -X POST https://missed-dose-service-64rz4skmdq-uc.a.run.app/rejection/analyze \
+  -H "Content-Type: application/json" \
+  -d '{"symptoms":{"fever":true,"decreased_urine_output":true,"tenderness":true,"fever_temperature":101.5},"patient_id":"demo_patient"}'</code>
+            </div>
+            <p style="margin-top: 0.5rem; font-size: 0.85rem; color: #5f6368;">
+                Response includes: Urgency level • Rejection probability • Population statistics • Recommended actions
+            </p>
+
+            <div class="button-group" style="margin-top: 2rem;">
+                <a href="/health" class="button secondary">View System Health</a>
+                <a href="https://sonarcloud.io/summary/new_code?id=adamkwhite_transplant-gcp&branch=main" class="button secondary" target="_blank">View Code Quality</a>
+                <a href="https://github.com/adamkwhite/transplant-gcp" class="button primary" target="_blank">View on GitHub</a>
+            </div>
+        </section>
+
+        <footer>
+            <p>Built for <strong>Google Cloud Run Hackathon 2025</strong> - AI Agents Category</p>
+            <p>Created in memory of those affected by transplant complications</p>
+            <p class="tech-note">
+                Powered by Google ADK • Gemini 2.0 Flash • Cloud Run • Firestore
+            </p>
+            <p style="margin-top: 15px; font-size: 0.9rem;">
+                <a href="https://transplant-medication-demo.netlify.app/"
+                   target="_blank"
+                   style="color: #90cdf4; text-decoration: none; border-bottom: 1px solid #90cdf4;">
+                    🎨 Try the Interactive Netlify Demo
+                </a>
+            </p>
+        </footer>
+    </div>
+</body>
+</html>

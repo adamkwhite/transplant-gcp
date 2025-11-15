@@ -19,28 +19,53 @@ gcloud config set project $PROJECT_ID
 echo ""
 echo "📦 Preparing deployment..."
 
-# Copy gemini_client to the service directory for Docker build
-cp services/gemini_client.py services/missed-dose/
+# Copy ADK agents, config, and SRTR data to service directory for Docker build
+echo "  → Copying ADK agents, config, and SRTR data..."
+mkdir -p services/missed-dose/services/
+cp -r services/agents services/missed-dose/services/
+cp -r services/config services/missed-dose/services/
+cp -r services/data services/missed-dose/services/
+
+# Copy SRTR processed data
+echo "  → Copying SRTR data files..."
+mkdir -p services/missed-dose/data/srtr/
+cp -r data/srtr/processed services/missed-dose/data/srtr/ 2>/dev/null || echo "  ⚠️  SRTR data not found - deployment will work without real data"
 
 # Deploy to Cloud Run
-echo "🔨 Building and deploying to Cloud Run..."
+echo "🔨 Building and deploying to Cloud Run with ADK agents..."
 echo "This will build the container and deploy in one step..."
 
 cd services/missed-dose
 
+# Load GEMINI_API_KEY from .env file
+if [ -f "../../.env" ]; then
+    export $(grep GEMINI_API_KEY ../../.env | xargs)
+    echo "  → Loaded GEMINI_API_KEY from .env"
+elif [ -z "$GEMINI_API_KEY" ]; then
+    echo "  ⚠️  WARNING: GEMINI_API_KEY not set - API calls will fail!"
+    echo "  → Set it in .env file or export GEMINI_API_KEY=your-key"
+fi
+
 # Deploy with source (builds automatically)
+# Increased memory for ADK agents (5 agents + coordinator = ~1GB recommended)
 gcloud run deploy $SERVICE_NAME \
     --source . \
     --region $REGION \
     --allow-unauthenticated \
-    --memory 512Mi \
-    --cpu 1 \
-    --timeout 60 \
+    --memory 1Gi \
+    --cpu 2 \
+    --timeout 300 \
     --max-instances 10 \
-    --set-env-vars="GOOGLE_CLOUD_PROJECT=$PROJECT_ID"
+    --set-env-vars="GOOGLE_CLOUD_PROJECT=$PROJECT_ID,GEMINI_API_KEY=$GEMINI_API_KEY" \
+    --platform managed
 
 # Get the service URL
 SERVICE_URL=$(gcloud run services describe $SERVICE_NAME --region=$REGION --format='value(status.url)')
+
+# Cleanup copied files
+echo ""
+echo "🧹 Cleaning up temporary files..."
+rm -rf services/missed-dose/services/ services/missed-dose/data/
 
 echo ""
 echo "✅ Deployment Complete!"
