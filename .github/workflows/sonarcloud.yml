@@ -15,7 +15,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0  # Shallow clones should be disabled for better analysis
 
@@ -81,7 +81,7 @@ jobs:
             -Dsonar.projectKey=adamkwhite_transplant-gcp
 
       - name: SonarCloud Quality Gate Check
-        uses: SonarSource/sonarqube-quality-gate-action@95b1cc6c02a15c8ecc00c07b1c2a75ed61a14055 # master as of 2025-10-29
+        uses: SonarSource/sonarqube-quality-gate-action@cb3ed20f9fec62b4c3b8ad9e77656c6adaade913 # master as of 2025-10-29
         timeout-minutes: 5
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
