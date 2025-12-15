@@ -9,7 +9,7 @@
 
 # Google Agent Development Kit (ADK)
 # Using 1.17.0 - supports async generator pattern for agent.run_async()
-google-adk==1.17.0
+google-adk==1.21.0
 
 # Google Cloud Services
 google-cloud-firestore==2.13.0
