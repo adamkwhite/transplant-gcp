@@ -1,5 +1,12 @@
 # 🚀 Transplant Medication Adherence - Google Cloud Run
 
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=adamkwhite_transplant-gcp&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=adamkwhite_transplant-gcp)
+[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=adamkwhite_transplant-gcp&metric=bugs)](https://sonarcloud.io/summary/new_code?id=adamkwhite_transplant-gcp)
+[![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=adamkwhite_transplant-gcp&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=adamkwhite_transplant-gcp)
+[![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=adamkwhite_transplant-gcp&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=adamkwhite_transplant-gcp)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=adamkwhite_transplant-gcp&metric=coverage)](https://sonarcloud.io/summary/new_code?id=adamkwhite_transplant-gcp)
+[![Duplicated Lines (%)](https://sonarcloud.io/api/project_badges/measure?project=adamkwhite_transplant-gcp&metric=duplicated_lines_density)](https://sonarcloud.io/summary/new_code?id=adamkwhite_transplant-gcp)
+
 ## For Google Cloud Run Hackathon - AI Agents Category
 
 **Live Service**: https://missed-dose-service-64rz4skmdq-uc.a.run.app
