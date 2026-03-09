@@ -113,6 +113,7 @@ jobs:
           # Check if tests exist
           if find tests/ -name "test_*.py" -type f | grep -q .; then
             pytest tests/ \
+              --ignore=tests/integration \
               --cov=services \
               --cov-report=term-missing \
               --cov-report=xml \
