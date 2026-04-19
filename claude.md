@@ -18,9 +18,9 @@
 
 ## Current Status
 
-**Phase**: Production - Real rejection detection deployed
-**Last Session**: 2025-11-09
-**Current Branch**: `main` (all work merged)
+**Phase**: Planning - Honeycomb.io observability integration
+**Last Session**: 2025-11-30
+**Current Branch**: `main` (planning artifacts added)
 
 ### Completed Milestones
 - ✅ **Task 1.0**: ADK Installation and Configuration
@@ -49,9 +49,12 @@
   - **156 tests passing**, 17 skipped, 1 transient API error
 
 ### Next Steps
-- **Optional**: Extract SRTR integration logic to shared utility (reduce duplication from 7.9% to <3%)
-- **Optional**: Implement SymptomMonitor, DrugInteractionChecker, and Coordinator agents
-- **Current**: All critical features complete and deployed
+- **Current**: Honeycomb.io observability integration (planning complete, ready for implementation)
+  - PRD: `docs/features/honeycomb-observability-PLANNED/prd.md`
+  - Tasks: 84 sub-tasks across 6 phases (11-15 hours estimated)
+  - Purpose: Interview demonstration + production monitoring
+- **Future**: Extract SRTR integration logic to shared utility (reduce duplication from 7.9% to <3%)
+- **Future**: Implement SymptomMonitor, DrugInteractionChecker, and Coordinator agents
 
 ## Technology Stack
 
@@ -194,7 +197,55 @@ transplant-gcp/
 - All checks passing consistently
 - Cache working correctly
 
-## Recent Changes (Last Session: 2025-11-09)
+## Recent Changes
+
+### Session: 2025-11-30 - Honeycomb.io Observability Planning
+
+**Objective**: Create comprehensive PRD and task breakdown for Honeycomb.io observability integration to support Honeycomb Signals team interview preparation and production monitoring.
+
+**Deliverables Created**:
+1. **PRD** (`docs/features/honeycomb-observability-PLANNED/prd.md`)
+   - Comprehensive engineering PRD (Option 2 structure)
+   - Dual-purpose: Interview demonstration + production observability
+   - 10 Functional Requirements (FR1-FR10)
+   - 6 Technical Requirements (TR1-TR6)
+   - 5 Non-Functional Requirements (NFR1-NFR5)
+   - Complete code examples for all major components
+   - 7 interview-ready Honeycomb queries with talking points
+   - Risk analysis with mitigation strategies
+
+2. **Task List** (`docs/features/honeycomb-observability-PLANNED/tasks.md`)
+   - 84 actionable sub-tasks across 6 parent tasks
+   - Task 1.0: OpenTelemetry infrastructure (10 sub-tasks)
+   - Task 2.0: PII/PHI filtering (9 sub-tasks)
+   - Task 3.0: Flask + core agents (18 sub-tasks)
+   - Task 4.0: Gemini API tracing (11 sub-tasks)
+   - Task 5.0: Production hardening (25 sub-tasks)
+   - Task 6.0: Interview prep (15 sub-tasks)
+
+3. **Status Tracker** (`docs/features/honeycomb-observability-PLANNED/status.md`)
+   - Progress tracking by phase
+   - Milestone checkpoints
+   - Implementation notes
+
+4. **Honeycomb Account Setup**
+   - Created account at honeycomb.io
+   - Generated API key with "Environments: Write" scope
+   - Stored securely in `pass`
+
+**Key Decisions**:
+- **Dual-mode exporter**: Support both OTLP and HTTP API (feature flag)
+- **PII/PHI filtering**: Production-safe with patient ID hashing and symptom sanitization
+- **MVP scope**: Focus on core agents (TransplantCoordinator + MedicationAdvisor)
+- **Interview focus**: Demonstrate "visible product engineering" for Honeycomb Signals team
+
+**Estimated Effort**: 11-15 hours over 2-3 days
+
+**Status**: Planning complete, ready for implementation
+
+---
+
+### Session: 2025-11-09 - Real Rejection Detection
 
 ### PR #23: Real Rejection Detection with SRTR Data ✅
 - **Created RejectionRiskAgent** (`services/agents/rejection_risk_agent.py`)
@@ -430,6 +481,6 @@ This improves agent accuracy and reduces hallucination.
 
 ---
 
-**Last Updated**: 2025-11-09
-**Last Session Focus**: Real Rejection Detection with SRTR Data (Issue #22, PR #23)
-**Current Status**: Production - Rejection detection deployed and live
+**Last Updated**: 2025-11-30
+**Last Session Focus**: Honeycomb.io Observability Planning
+**Current Status**: Planning - Comprehensive PRD and 84 tasks ready for implementation
