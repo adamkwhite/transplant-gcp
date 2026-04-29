@@ -1,11 +1,11 @@
 # Google ADK for multi-agent system (install first)
-google-adk==1.17.0
+google-adk==1.31.1
 
 # Google Cloud Services
 google-cloud-firestore==2.13.0
 google-generativeai==0.3.0
 
 # Web Framework
-Flask==3.0.0
+Flask>=3.1.3
 flask-cors>=4.0.2
 gunicorn>=23.0.0
