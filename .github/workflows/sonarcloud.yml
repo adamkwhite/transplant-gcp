@@ -3,9 +3,11 @@ name: SonarCloud Analysis
 on:
   push:
     branches: [main]
+    paths-ignore: ['*.md', 'docs/**', 'LICENSE', '.gitignore', '.github/**']
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
     branches: [main]
+    paths-ignore: ['*.md', 'docs/**', 'LICENSE', '.gitignore', '.github/**']
   workflow_dispatch:  # Allow manual triggers
 
 concurrency:
