@@ -84,9 +84,9 @@ class MockDrugInteractionCheckerAgent:
         patient_context: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         """Return mock interaction check response."""
-        has_interaction = "ibuprofen" in medications or (foods and "grapefruit" in str(foods))
-        has_supplement_interaction = supplements and any(
-            supp in ["st john's wort", "ginkgo"] for supp in supplements
+        has_interaction = "ibuprofen" in medications or bool(foods and "grapefruit" in str(foods))
+        has_supplement_interaction = bool(
+            supplements and any(supp in ["st john's wort", "ginkgo"] for supp in supplements)
         )
         patient_info = f" for patient {patient_id}" if patient_id else ""
         transplant_type = (
