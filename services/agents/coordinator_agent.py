@@ -21,6 +21,28 @@ from services.config.adk_config import (
     GEMINI_API_KEY,
 )
 
+# Keyword routing table. Order matters: it determines the order agents appear
+# in the routing decision, matching the sequential if-blocks this replaced.
+ROUTING_KEYWORDS: tuple[tuple[str, tuple[str, ...]], ...] = (
+    ("MedicationAdvisor", ("missed", "late", "dose", "timing", "forgot")),
+    (
+        "SymptomMonitor",
+        ("symptom", "feeling", "fever", "pain", "rejection", "urine", "weight"),
+    ),
+    (
+        "DrugInteractionChecker",
+        (
+            "interaction",
+            "taking",
+            "new medication",
+            "food",
+            "grapefruit",
+            "ibuprofen",
+            "supplement",
+        ),
+    ),
+)
+
 
 class TransplantCoordinatorAgent:
     """
@@ -182,47 +204,29 @@ Respond with JSON: {{
 
         # Parse routing decision (simplified for now)
         # In real implementation, parse JSON from response
-        request_lower = request.lower()
-
-        agents_needed = []
-        if any(word in request_lower for word in ["missed", "late", "dose", "timing", "forgot"]):
-            agents_needed.append("MedicationAdvisor")
-        if any(
-            word in request_lower
-            for word in [
-                "symptom",
-                "feeling",
-                "fever",
-                "pain",
-                "rejection",
-                "urine",
-                "weight",
-            ]
-        ):
-            agents_needed.append("SymptomMonitor")
-        if any(
-            word in request_lower
-            for word in [
-                "interaction",
-                "taking",
-                "new medication",
-                "food",
-                "grapefruit",
-                "ibuprofen",
-                "supplement",
-            ]
-        ):
-            agents_needed.append("DrugInteractionChecker")
-
-        # Default to MedicationAdvisor if unclear
-        if not agents_needed:
-            agents_needed.append("MedicationAdvisor")
+        agents_needed = self._agents_for_request(request)
 
         return {
             "agents_needed": agents_needed,
             "reasoning": str(response),
             "request_type": self._classify_request_type(agents_needed),
         }
+
+    @staticmethod
+    def _agents_for_request(request: str) -> list[str]:
+        """Keyword-route a request to the specialist agents that should see it.
+
+        Falls back to MedicationAdvisor when nothing matches. Order of the
+        returned list follows ROUTING_KEYWORDS, which is the order the original
+        sequential if-blocks appended in.
+        """
+        request_lower = request.lower()
+        agents = [
+            agent
+            for agent, keywords in ROUTING_KEYWORDS
+            if any(word in request_lower for word in keywords)
+        ]
+        return agents or ["MedicationAdvisor"]
 
     def _classify_request_type(self, agents_needed: list[str]) -> str:
         """Classify request type based on agents needed."""

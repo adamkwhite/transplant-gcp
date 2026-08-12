@@ -6,6 +6,7 @@ standardized parsing logic to extract structured data from those responses.
 """
 
 import json
+from collections.abc import Iterator
 from typing import Any
 
 
@@ -39,17 +40,18 @@ def _extract_code_block(text: str, marker: str) -> str | None:
     return text[content_start:content_end]
 
 
-def _find_json_object(text: str) -> str | None:
-    """Find first complete JSON object by counting braces."""
-    brace_index = text.find("{")
-    if brace_index == -1:
-        return None
+def _scan_structural_chars(text: str, start: int) -> Iterator[tuple[int, str]]:
+    """Yield (index, char) for characters outside string literals.
 
-    depth = 0
+    Handles the two things that make brace counting non-trivial: backslash
+    escapes, and quotes that toggle in and out of a string literal. Escape and
+    quote characters are consumed here and never yielded, so the caller only
+    ever sees structural characters.
+    """
     in_string = False
     escape_next = False
 
-    for i in range(brace_index, len(text)):
+    for i in range(start, len(text)):
         char = text[i]
 
         if escape_next:
@@ -65,12 +67,23 @@ def _find_json_object(text: str) -> str | None:
             continue
 
         if not in_string:
-            if char == "{":
-                depth += 1
-            elif char == "}":
-                depth -= 1
-                if depth == 0:
-                    return text[brace_index : i + 1]
+            yield i, char
+
+
+def _find_json_object(text: str) -> str | None:
+    """Find first complete JSON object by counting braces."""
+    brace_index = text.find("{")
+    if brace_index == -1:
+        return None
+
+    depth = 0
+    for i, char in _scan_structural_chars(text, brace_index):
+        if char == "{":
+            depth += 1
+        elif char == "}":
+            depth -= 1
+            if depth == 0:
+                return text[brace_index : i + 1]
 
     return None
 
