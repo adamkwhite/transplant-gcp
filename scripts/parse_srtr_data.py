@@ -265,37 +265,52 @@ class SRTRDataParser:
             "average_graft_survival_1yr": {},
         }
 
-        # Count records per dataset
-        for dataset_name, records in data.items():
-            if isinstance(records, list):
-                summary["total_records"] += len(records)
-                summary["datasets"][dataset_name] = len(records)
+        total, per_dataset = self._count_records(data)
+        summary["total_records"] = total
+        summary["datasets"] = per_dataset
 
-        # Extract latest acute rejection rates (2022)
         if "acute_rejection_by_age" in data:
-            latest_year = 2022
-            for record in data["acute_rejection_by_age"]:
-                if record["year"] == latest_year:
-                    age_group = record["age_group"]
-                    summary["latest_acute_rejection_rates"][age_group] = record["rejection_rate"]
+            summary["latest_acute_rejection_rates"] = self._latest_rejection_rates(
+                data["acute_rejection_by_age"]
+            )
 
-        # Calculate average 1-year graft survival by age
         if "graft_survival_by_age" in data:
-            one_year_data = [
-                r for r in data["graft_survival_by_age"] if 0.9 <= r["years_post_transplant"] <= 1.1
-            ]
-            for record in one_year_data:
-                age_group = record["age_group"]
-                if age_group not in summary["average_graft_survival_1yr"]:
-                    summary["average_graft_survival_1yr"][age_group] = []
-                summary["average_graft_survival_1yr"][age_group].append(record["survival_rate"])
-
-            # Average the values
-            for age_group in summary["average_graft_survival_1yr"]:
-                values = summary["average_graft_survival_1yr"][age_group]
-                summary["average_graft_survival_1yr"][age_group] = sum(values) / len(values)
+            summary["average_graft_survival_1yr"] = self._average_1yr_graft_survival(
+                data["graft_survival_by_age"]
+            )
 
         return summary
+
+    @staticmethod
+    def _count_records(data: dict[str, Any]) -> tuple[int, dict[str, int]]:
+        """Total record count and per-dataset counts, skipping non-list values."""
+        per_dataset = {
+            name: len(records) for name, records in data.items() if isinstance(records, list)
+        }
+        return sum(per_dataset.values()), per_dataset
+
+    @staticmethod
+    def _latest_rejection_rates(
+        records: list[dict[str, Any]], latest_year: int = 2022
+    ) -> dict[str, Any]:
+        """Rejection rate per age group for the latest year.
+
+        Later records win on duplicate age groups, matching the original loop.
+        """
+        return {
+            record["age_group"]: record["rejection_rate"]
+            for record in records
+            if record["year"] == latest_year
+        }
+
+    @staticmethod
+    def _average_1yr_graft_survival(records: list[dict[str, Any]]) -> dict[str, float]:
+        """Mean survival rate per age group for records near 1 year post-transplant."""
+        buckets: dict[str, list[float]] = {}
+        for record in records:
+            if 0.9 <= record["years_post_transplant"] <= 1.1:
+                buckets.setdefault(record["age_group"], []).append(record["survival_rate"])
+        return {age_group: sum(values) / len(values) for age_group, values in buckets.items()}
 
 
 def main():

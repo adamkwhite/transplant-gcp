@@ -145,6 +145,12 @@ def calculate_adherence(patient_id):
     return 0.8, 0
 
 
+# Sentinel for "this symptom is absent". Distinct from None, because a raw
+# value of None IS carried through for fatigue/urine_output in the original
+# logic — collapsing the two would silently drop those keys.
+_OMIT = object()
+
+
 def normalize_rejection_symptoms(raw_symptoms: dict) -> dict:
     """
     Normalize symptom data to match RejectionRiskAgent expected format.
@@ -161,50 +167,14 @@ def normalize_rejection_symptoms(raw_symptoms: dict) -> dict:
     """
     normalized = {}
 
-    # Handle fever (can be boolean + temperature, or just temperature)
-    if "fever_temperature" in raw_symptoms:
-        normalized["fever"] = raw_symptoms["fever_temperature"]
-    elif "fever" in raw_symptoms:
-        fever_val = raw_symptoms["fever"]
-        # If fever is boolean True and no temperature, assume mild fever
-        if fever_val is True:
-            normalized["fever"] = 99.5
-        elif isinstance(fever_val, int | float):
-            normalized["fever"] = fever_val
-        # If fever is False or missing, don't include it
-
-    # Handle weight gain
-    if "weight_gain" in raw_symptoms:
-        normalized["weight_gain"] = raw_symptoms["weight_gain"]
-    elif "weight_gain_lbs" in raw_symptoms:
-        normalized["weight_gain"] = raw_symptoms["weight_gain_lbs"]
-
-    # Handle fatigue (convert boolean to description)
-    if "fatigue" in raw_symptoms:
-        fatigue_val = raw_symptoms["fatigue"]
-        if fatigue_val is True:
-            normalized["fatigue"] = "moderate"
-        elif fatigue_val is False:
-            normalized["fatigue"] = "none"
-        else:
-            normalized["fatigue"] = fatigue_val
-    elif "fatigue_level" in raw_symptoms:
-        normalized["fatigue"] = raw_symptoms["fatigue_level"]
-
-    # Handle urine output (convert boolean to description)
-    if "decreased_urine_output" in raw_symptoms:
-        if raw_symptoms["decreased_urine_output"] is True:
-            normalized["urine_output"] = "decreased"
-        elif raw_symptoms["decreased_urine_output"] is False:
-            normalized["urine_output"] = "normal"
-    elif "urine_output" in raw_symptoms:
-        urine_val = raw_symptoms["urine_output"]
-        if urine_val is True:
-            normalized["urine_output"] = "decreased"
-        elif urine_val is False:
-            normalized["urine_output"] = "normal"
-        else:
-            normalized["urine_output"] = urine_val
+    for key, value in (
+        ("fever", _normalize_fever(raw_symptoms)),
+        ("weight_gain", _normalize_weight_gain(raw_symptoms)),
+        ("fatigue", _normalize_fatigue(raw_symptoms)),
+        ("urine_output", _normalize_urine_output(raw_symptoms)),
+    ):
+        if value is not _OMIT:
+            normalized[key] = value
 
     # Pass through any other symptom fields directly
     other_fields = ["tenderness", "swelling", "pain", "nausea"]
@@ -213,6 +183,71 @@ def normalize_rejection_symptoms(raw_symptoms: dict) -> dict:
             normalized[field] = raw_symptoms[field]
 
     return normalized
+
+
+def _normalize_fever(raw_symptoms: dict):
+    """Fever as a temperature. Boolean True means an unmeasured mild fever."""
+    if "fever_temperature" in raw_symptoms:
+        return raw_symptoms["fever_temperature"]
+    if "fever" not in raw_symptoms:
+        return _OMIT
+
+    fever_val = raw_symptoms["fever"]
+    # `is True` must precede the isinstance check: bool subclasses int, so True
+    # would otherwise be passed through as the temperature 1.
+    if fever_val is True:
+        return 99.5
+    if isinstance(fever_val, int | float):
+        return fever_val
+    # False, None or anything non-numeric: omit rather than report a fever.
+    return _OMIT
+
+
+def _normalize_weight_gain(raw_symptoms: dict):
+    """Weight gain in lbs, under either accepted key."""
+    if "weight_gain" in raw_symptoms:
+        return raw_symptoms["weight_gain"]
+    if "weight_gain_lbs" in raw_symptoms:
+        return raw_symptoms["weight_gain_lbs"]
+    return _OMIT
+
+
+def _normalize_fatigue(raw_symptoms: dict):
+    """Fatigue as a description; booleans map to moderate/none."""
+    if "fatigue" in raw_symptoms:
+        fatigue_val = raw_symptoms["fatigue"]
+        if fatigue_val is True:
+            return "moderate"
+        if fatigue_val is False:
+            return "none"
+        return fatigue_val
+    if "fatigue_level" in raw_symptoms:
+        return raw_symptoms["fatigue_level"]
+    return _OMIT
+
+
+def _normalize_urine_output(raw_symptoms: dict):
+    """Urine output as a description; booleans map to decreased/normal.
+
+    Note the asymmetry, preserved from the original: under
+    `decreased_urine_output` a non-boolean is dropped, whereas under
+    `urine_output` it is passed through unchanged.
+    """
+    if "decreased_urine_output" in raw_symptoms:
+        decreased = raw_symptoms["decreased_urine_output"]
+        if decreased is True:
+            return "decreased"
+        if decreased is False:
+            return "normal"
+        return _OMIT
+    if "urine_output" in raw_symptoms:
+        urine_val = raw_symptoms["urine_output"]
+        if urine_val is True:
+            return "decreased"
+        if urine_val is False:
+            return "normal"
+        return urine_val
+    return _OMIT
 
 
 def record_interaction(patient_id, interaction_type, data):

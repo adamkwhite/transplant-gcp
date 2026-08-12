@@ -127,52 +127,86 @@ class SRTRDataParserV2:
 
         for sheet_name in matching_sheets:
             try:
-                df = pd.read_excel(file_path, sheet_name=sheet_name)
-
-                # Clean up - skip unnamed columns
-                df = df.iloc[:, 8:]  # Skip first 8 columns (formatting)
-                df = df.dropna(how="all")
-
-                # Determine what the first column represents
-                first_col_name = df.columns[0]
-
-                for _, row in df.iterrows():
-                    time_or_year = row.iloc[0]
-                    if pd.isna(time_or_year):
-                        continue
-
-                    # Iterate through demographic/age columns
-                    for col in df.columns[1:]:
-                        value = row[col]
-                        if pd.isna(value):
-                            continue
-
-                        record = {
-                            "metric": metric_name,
-                            "organ": organ,
-                            "source": "SRTR 2023",
-                            "sheet": sheet_name,
-                        }
-
-                        # Add time/year field
-                        if "year" in first_col_name.lower() or (
-                            "year" in sheet_name.lower() or "inc-AR" in sheet_name
-                        ):
-                            record["year"] = int(time_or_year)
-                        else:
-                            record["time_value"] = float(time_or_year)
-
-                        # Add demographic field
-                        record["demographic"] = col
-                        record["value"] = float(value)
-
-                        all_records.append(record)
-
+                all_records.extend(self._parse_sheet(file_path, sheet_name, metric_name, organ))
             except Exception as e:
                 print(f"    ⚠️  Error parsing {sheet_name}: {e}")
                 continue
 
         return all_records
+
+    def _parse_sheet(
+        self,
+        file_path: Path,
+        sheet_name: str,
+        metric_name: str,
+        organ: str,
+    ) -> list[dict[str, Any]]:
+        """Parse a single matched sheet into records."""
+        df = pd.read_excel(file_path, sheet_name=sheet_name)
+
+        # Clean up - skip unnamed columns
+        df = df.iloc[:, 8:]  # Skip first 8 columns (formatting)
+        df = df.dropna(how="all")
+
+        # Determine what the first column represents. Loop-invariant, so it is
+        # resolved once here rather than re-evaluated per cell as it was.
+        first_col_name = df.columns[0]
+        is_year_column = "year" in first_col_name.lower() or (
+            "year" in sheet_name.lower() or "inc-AR" in sheet_name
+        )
+
+        records: list[dict[str, Any]] = []
+        for _, row in df.iterrows():
+            time_or_year = row.iloc[0]
+            if pd.isna(time_or_year):
+                continue
+            records.extend(
+                self._records_from_row(
+                    row=row,
+                    columns=df.columns[1:],
+                    time_or_year=time_or_year,
+                    is_year_column=is_year_column,
+                    metric_name=metric_name,
+                    organ=organ,
+                    sheet_name=sheet_name,
+                )
+            )
+        return records
+
+    @staticmethod
+    def _records_from_row(
+        *,
+        row: Any,
+        columns: Any,
+        time_or_year: Any,
+        is_year_column: bool,
+        metric_name: str,
+        organ: str,
+        sheet_name: str,
+    ) -> list[dict[str, Any]]:
+        """One record per non-null demographic/age column in a row."""
+        records: list[dict[str, Any]] = []
+        for col in columns:
+            value = row[col]
+            if pd.isna(value):
+                continue
+
+            record: dict[str, Any] = {
+                "metric": metric_name,
+                "organ": organ,
+                "source": "SRTR 2023",
+                "sheet": sheet_name,
+            }
+
+            if is_year_column:
+                record["year"] = int(time_or_year)
+            else:
+                record["time_value"] = float(time_or_year)
+
+            record["demographic"] = col
+            record["value"] = float(value)
+            records.append(record)
+        return records
 
     def save_json(self, data: dict[str, Any], organ: str) -> None:
         """Save parsed data to JSON."""
